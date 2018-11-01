@@ -136,9 +136,7 @@ ggplot(pred.data,aes(x=yhat,y=y.true))+
     xlim(min(pred.data),max(pred.data))+
     ylim(min(pred.data),max(pred.data))+
     theme(plot.title = element_text(hjust=0.5))
-```
 
-```{r, ,include=TRUE,fig.show='hold'}
 ggplot(stack(as.data.frame(t(Y.pred))))+
     geom_boxplot(aes(x=ind,y=values))+
     geom_point(data=data.frame(Y.true=Y[156:164]),aes(x=1:9,y=Y.true),shape=4,size=3)+
