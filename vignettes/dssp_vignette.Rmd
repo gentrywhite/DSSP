@@ -124,6 +124,9 @@ Y.pred<-DSSP.predict(meuse.fit,X.pred)
 
 ```{r, ,include=TRUE,fig.show='hold'}
 library(ggplot2)
+
+yhat<-rowMeans(Y.pred)
+
 pred.data<-data.frame(cbind(yhat,y.true=meuse.all$zinc[156:164]))
 
 ggplot(pred.data,aes(x=yhat,y=y.true))+
