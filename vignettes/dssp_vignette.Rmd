@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+load("meuse.Rdata")
 ```
 ## Introduction
 This short vignette demonstrates the use of the functions DSSP() and DSSP.predict() to analyse spatial data.  The example here uses the Meuse River data set from the package 'sp'. First start by loading the library and data set 'meuse.all'. 
@@ -28,9 +29,10 @@ library(gstat)
 library(ggplot2)
 
 data("meuse.all")
+data("meuse")
 ```
 Next, set the coordinates for the data and extract the $X$ matrix of locations and the $Y$ the log of observed zinc concentrations,
-```{r}
+```{r,eval=FALSE}
 coordinates(meuse.all) = ~x+y
 
 ## Use same data in the TPS model
@@ -45,7 +47,7 @@ note that data are scaled, this is typically good practice.
 
 Next, we select the number of samples to draw and invoke the function DSSP().
 
-```{r}
+```{r,eval=FALSE}
 N<-10000  ## number of samples to draw from the DSSP model
 
 meuse.fit<-DSSP(N,X.train,Y.train,function(x) -2*log(1+x), pars=c(0.001,0.001),ncores=1)
@@ -57,6 +59,7 @@ NU<-meuse.fit$nu
 ```
 The function DSSP() takes as its argument $N$ the number of samples desired, $X$ the matrix of coordinate pairs indicating locations of the observed data $Y$, as well as a function specifying the prior density of $\eta$, the shape and rate parameters of the inverse-gamma prior for $\delta$, and $ncores$ the number of cores to use. The argument $ncores$ is an optional argument that is only effective if your version of R is configured to use OpenMP.  
 
+```{r,eval=FALSE}
 ##  Rescale NU to reflect the original units
 
 center.y<-attr(y.train,"scaled:center")
@@ -65,10 +68,12 @@ scale.y<-attr(y.train,"scaled:scale")
 yhat<-rowMeans(exp(NU*scale.y+center.y))
 
 meuse$yhat<-yhat ## Model estimates of E(zinc concentration (ppm))
+```
 
-##  Now plot Parameter Estimates and ACF Plots
+
 ```{r, ,include=TRUE,fig.show='hold'}
-library(ggplot2)
+##  Now plot Parameter Estimates and ACF Plots
+
 ggplot(data.frame(X=seq(0,1,len=10000),x=ETA,y=exp(-seq(0,1,len=10000))))+geom_density(aes(x=x))+
     labs(x=expression(eta),y="posterior density",title=expression("Posterior Density of "*eta))+
     theme(plot.title=element_text(hjust=0.5))#+    geom_line(aes(x=X,y=y))
