@@ -26,15 +26,15 @@ make.M<-function(X)
 {
   X<-as.matrix(X)
   n<-nrow(X)
-  T<-cbind(1,X)
-  d<-ncol(T)
+  Tmat<-cbind(1,X)
+  d<-ncol(Tmat)
   D<-as.matrix(dist(X))
   K<-D^2*log(D)
   diag(K)<-0
-  TT<-T%*%t(T)
+  TT<-tcrossprod(Tmat,Tmat)
   F.mat<-eigen(TT,symmetric = TRUE)
   F2<-F.mat$vectors[,-c(1:d)]
-  G<-cbind(T,K%*%F2)
+  G<-cbind(Tmat,K%*%F2)
   H<-matrix(0,n,n)
   H[-c(1:d),-c(1:d)]<-t(F2)%*%K%*%F2
   G.inv<-qr.solve(G)
@@ -218,12 +218,13 @@ sample.delta<-function(eta,nd,ev,Q,pars)
   f.beta<-function(x)
   {
     lambda<-1/(1+x*ev)
-    beta<-0.5*Q%*%diag(1-lambda)%*%t(Q)+pars[2]
+    b<-tcrossprod(Q,diag(1-lambda))
+    beta<-0.5*tcrossprod(Q,b)+pars[2]
     return(beta)
   }
-  alpha<-pars[1]+nd/2
+  alpha<-pars[1]+nd*0.5
   beta<-sapply(eta,f.beta)
-  delta<-1/rgamma(N,shape=nd/2,rate=beta)
+  delta<-1/rgamma(N,shape=alpha,rate=beta)
   return(delta)
 }
 
