@@ -167,7 +167,7 @@ sample.eta<-function(N,nd,ev,Q,log_prior,UL=1000)
 
 #  Set up the function for the ratio of uniforms algorithm
 
-  find.mode<-optim(1,function(x) -f.eta(x),lower=0.0000000001,upper=Inf,method="L-BFGS-B")$par
+  find.mode<-optim(1,function(x) -f.eta(x),lower=0.0000001,upper=Inf,method="L-BFGS-B")$par
   IC<-f.eta(find.mode)
   f.eta.sc<-function(x) f.eta(x)-IC
   ru.res<-rust::ru(f.eta.sc,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC")
@@ -267,16 +267,40 @@ sample.delta<-function(eta,nd,ev,Q,pars)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
 #'NU<-sample.nu(Y,ETA,DELTA,EV,V,ncores=1)
 
+##  Old Slow Version of sample.nu()
+
+# sample.nu<-function(y,eta,delta,ev,V,ncores=1)
+# {
+#   N<-length(eta)
+#   sample.nu.post<-function(i)
+#   {
+#     lambda<-1/(1+eta[i]*ev)
+#     S<-V%*%diag(lambda)%*%t(V)
+#     mean.nu<-S%*%y
+#     cov.nu<-delta[i]*S
+#     mvnfast::rmvn(1,mu=mean.nu,sigma=cov.nu,ncores=ncores)
+#   }
+#   nu<-sapply(1:N,sample.nu.post)
+#   return(nu)
+# }
+
+##  New and much faster version of sample.nu() 20X speed increase.
+
 sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 {
+
   N<-length(eta)
+  MU<-rep(0,length(y))
+  COV<-diag(rep(1,length(y)))
+  X<-mvnfast::rmvn(N,MU,COV,ncores)
+  tVy<-t(V)%*%y
+
   sample.nu.post<-function(i)
   {
     lambda<-1/(1+eta[i]*ev)
-    S<-V%*%diag(lambda)%*%t(V)
-    mean.nu<-S%*%y
-    cov.nu<-delta[i]*S
-    mvnfast::rmvn(1,mu=mean.nu,sigma=cov.nu,ncores=ncores)
+    lambda.sqrt<-sqrt(delta[i]*lambda)
+    r<-lambda.sqrt*X[i,]+diag(lambda)%*%tVy
+    V%*%r
   }
   nu<-sapply(1:N,sample.nu.post)
   return(nu)
