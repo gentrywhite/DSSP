@@ -113,10 +113,12 @@ make.Q<-function(y,V)
 
 eta.post<-function(eta,nd,ev,Q,log_prior)  ## posterior of eta|y
 {
-  a<--sum(log(1+eta*ev))
-  lambda<-1/(1+eta*ev)
-  alpha<-(nd)/2
-  beta<-0.5*Q%*%diag(1-lambda)%*%t(Q)
+  arg1<-(1+eta*ev)
+  a<--sum(log(arg1))
+  lambda<-1/arg1
+  alpha<-nd*0.5
+  arg2<-tcrossprod(Q,diag(1-lambda))
+  beta<-0.5*tcrossprod(Q,arg2)
   ans<-0.5*a+alpha*log(eta)-(alpha)*log(beta)+lgamma(alpha)+log_prior(eta)
   return(ans)
 }
@@ -290,8 +292,9 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 {
 
   N<-length(eta)
-  MU<-rep(0,length(y))
-  COV<-diag(rep(1,length(y)))
+  m<-length(y)
+  MU<-rep(0,m)
+  COV<-diag(rep(1,m))
   X<-mvnfast::rmvn(N,MU,COV,ncores)
   tVy<-t(V)%*%y
 
