@@ -29,16 +29,19 @@ make.M<-function(X)
   Tmat<-cbind(1,X)
   d<-ncol(Tmat)
   D<-as.matrix(dist(X))
-  K<-D^2*log(D)
-  diag(K)<-0
+  ind0<-D!=0
+  K<-D
+  K[ind0]<-D[ind0]^2*log(D[ind0])
   TT<-tcrossprod(Tmat,Tmat)
   F.mat<-eigen(TT,symmetric = TRUE)
   F2<-F.mat$vectors[,-c(1:d)]
   G<-cbind(Tmat,K%*%F2)
   H<-matrix(0,n,n)
-  H[-c(1:d),-c(1:d)]<-t(F2)%*%K%*%F2
+  F2K<-crossprod(K,F2)
+  H[-c(1:d),-c(1:d)]<-crossprod(F2K,F2)
   G.inv<-qr.solve(G)
-  M<-t(G.inv)%*%H%*%G.inv
+  tGH<-t(G.inv)%*%H
+  M<-tGH%*%G.inv
   M.eigen<-eigen(M,symmetric = TRUE)
   return(list(M=M,M.eigen=M.eigen))
 }
