@@ -35,10 +35,10 @@ make.M<-function(X)
   TT<-tcrossprod(Tmat,Tmat)
   F.mat<-eigen(TT,symmetric = TRUE)
   F2<-F.mat$vectors[,-c(1:d)]
-  G<-cbind(Tmat,K%*%F2)
+  KF2<-crossprod(K,F2)
+  G<-cbind(Tmat,KF2)
   H<-matrix(0,n,n)
-  F2K<-crossprod(K,F2)
-  H[-c(1:d),-c(1:d)]<-crossprod(F2K,F2)
+  H[-c(1:d),-c(1:d)]<-crossprod(KF2,F2)
   G.inv<-qr.solve(G)
   tGH<-t(G.inv)%*%H
   M<-tGH%*%G.inv
