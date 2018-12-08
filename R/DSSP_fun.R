@@ -26,7 +26,9 @@ make.M<-function(X)
 {
   X<-as.matrix(X)
   n<-nrow(X)
-  Tmat<-cbind(1,X)
+  dimX<-ncol(X)
+  deg<-trunc(dimX/2+1)-1
+  Tmat<-cbind(1,poly(X,degree=deg,raw=TRUE))
   d<-ncol(Tmat)
   D<-as.matrix(dist(X))
   ind0<-D!=0
