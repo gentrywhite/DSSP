@@ -1,5 +1,22 @@
-#' Function to compute the tps rbf depending on the if d is odd or even it is only for internal use in the function make.M().
+#' TPS radial basis function
 #'
+#' Function to compute the this-plate splines radial basis function for internal use by the function make.M().
+#'@param x is a Euclidean distance between two points.
+#'@param even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
+#'@keywords thin-plate spline basis function
+#'@return The resulting value of the thin-pkate spline radial basis function
+#'@details This fucntion computes the thin-plate spline radial basis function depending on the if d is odd or even.
+#'@export
+#'@examples
+#'## Use the Meuse River dataset from the package 'gstat'
+#'
+#'library(sp)
+#'library(gstat)
+#'data(meuse.all)
+#'coordinates(meuse.all)<-~x+y
+#'X<-scale(coordinates(meuse.all))
+#'D<-as.matrix(distance(X))
+#'K<-tps.rbf(D,TRUE)
 
 tps.rbf<-function(x,is.even)
   {
