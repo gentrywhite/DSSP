@@ -1,3 +1,20 @@
+#' Function to compute the tps rbf depending on the if d is odd or even it is only for internal use in the function make.M().
+#'
+
+tps.rbf<-function(x,is.even)
+  {
+    if(is.even==FALSE)
+      {
+        x^2
+      }
+    else
+      {
+        log(x)*x^2
+      }
+  }
+
+#'
+#
 #' Precision Matrix Function
 #'
 #'This function creates the precision matrix for the spatial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
@@ -22,18 +39,23 @@
 
 
 
+
+
 make.M<-function(X)
 {
   X<-as.matrix(X)
   n<-nrow(X)
   dimX<-ncol(X)
+  even<-dimX%%2==0
   deg<-trunc(dimX/2+1)-1
   Tmat<-cbind(1,poly(X,degree=deg,raw=TRUE))
   d<-ncol(Tmat)
   D<-as.matrix(dist(X))
   ind0<-D!=0
   K<-D
-  K[ind0]<-D[ind0]^2*log(D[ind0])
+  K[ind0]<-tps.rbf(D[ind0],even)
+  Kstar<-D
+  Kstar[ind0]<-D[ind0]^2*log(D[ind0])
   TT<-tcrossprod(Tmat,Tmat)
   F.mat<-eigen(TT,symmetric = TRUE)
   F2<-F.mat$vectors[,-c(1:d)]
