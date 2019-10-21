@@ -56,7 +56,7 @@ the resulting posterior of $\nu$ is proportional to
 \]
 which yields the posterior mean with the same solution as the penalised least squares. 
 
-The complete model is specified with a Gaussian likelihood, the impropoer prior for $\nu$, an inverse gaussian prior for $\delta$, and a prior for $\eta$. With this specification the joint posterior is written
+The complete model is specified with a Gaussian likelihood, the improper prior for $\nu$, an inverse gaussian prior for $\delta$, and a prior for $\eta$. With this specification the joint posterior is written
 \[
 \pi\left(\mathbf{\nu},\delta_0,\eta|\mathbf{y}\right)\propto
 f(\mathbf{y}|\mathbf{\nu},\delta)\pi\left(\mathbf{\nu}|\eta,\delta\right)\pi\left(\delta\right)
@@ -104,7 +104,7 @@ Next, we select the number of samples to draw and invoke the function DSSP().
 ```{r,eval=FALSE,include=TRUE}
 N<-10000  ## number of samples to draw from the DSSP model
 
-meuse.fit<-DSSP(N,X.train,Y.train,function(x) -2*log(1+x), pars=c(0.001,0.001))
+meuse.fit<-DSSP(N,X.train,Y.train,function(x) -2*log(1+x), fitted.values = TRUE pars=c(0.001,0.001))
 
 ETA<-meuse.fit$eta
 DELTA<-meuse.fit$delta
