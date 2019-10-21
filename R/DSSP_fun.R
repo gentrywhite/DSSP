@@ -340,7 +340,7 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
   m<-length(y)
   MU<-rep(0,m)
   COV<-diag(rep(1,m))
-  X<-mvnfast::rmvn(N,MU,COV,ncores)
+  X<-mvnfast::rmvn(N,MU,COV,ncores) ## it may be even faster to use a halton sequence
   tVy<-t(V)%*%y
 
   sample.nu.post<-function(i)
@@ -371,9 +371,10 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta, the variance parameter for the
 #'    Gaussian likelihood.
+#'@param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
 #'@param ncores number of cores to use when sampling from the distribution of nu, defaults to 1.
 #'    This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-#'    the user's system has OpenMP installed and pacakges are set to build with OpenMp enabled.
+#'    the user's system has OpenMP installed and pacakges are set to build with OpenMP enabled.
 #'    Please see the documentation for the mvnfast package for further details.
 #'@keywords spatial prior, thin-plate splines
 #'@keywords spatial prior, thin-plate splines
@@ -406,7 +407,7 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 #'
 #'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),ncores=1)
 
-DSSP<-function(N,x,y,log_prior,pars,ncores=1)
+DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE,ncores=1)
 {
 #  UseMethod("DSSP")
   ##  Test Inputs
@@ -461,11 +462,20 @@ DSSP<-function(N,x,y,log_prior,pars,ncores=1)
 
   delta<-sample.delta(eta,nd,EV,Q,pars)
 
-  ##  sample nu
+  if(fitted.values == TRUE)
+  {
+    ##  sample nu
 
-  nu<-sample.nu(Y,eta,delta,EV,V,ncores=ncores)
+    nu<-sample.nu(Y,eta,delta,EV,V,ncores=ncores)
 
-  return(list(eta=eta,delta=delta,nu=nu,X=X,Y=Y))
+    return(list(eta=eta,delta=delta,nu=nu,X=X,Y=Y))
+  }
+
+  else
+  {
+    return(list(eta=eta,delta=delta,X=X,Y=Y))
+  }
+
 
 }
 
