@@ -2,7 +2,7 @@
 % Please edit documentation in R/DSSP_fun.R
 \name{DSSP.predict}
 \alias{DSSP.predict}
-\title{Function to generate samples from the posterior predicitive distribution of y for new locations x.new}
+\title{Function to generate samples from the posterior predictive distribution of y for new locations x.new}
 \usage{
 DSSP.predict(dssp.model, x.pred, ncores = 1)
 }
@@ -13,7 +13,7 @@ DSSP.predict(dssp.model, x.pred, ncores = 1)
 
 \item{ncores}{number of cores to use when sampling from the posterior predictive distribution,
 defaults to 1. This is an optional argument to pass to rmvn() from the mvnfast package
-It requries that the user's system has OpenMP installed and pacakges are set to build with
+It requires that the user's system has OpenMP installed and packages are set to build with
 OpenMp enabled.  Please see the documentation for the mvnfast package for further details.}
 }
 \value{
@@ -41,7 +41,7 @@ f<-function(x) -x ## log-prior for exponential distribution for the smoothing pa
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001))
+OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
 
 Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
 }

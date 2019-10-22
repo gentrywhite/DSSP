@@ -2,7 +2,7 @@
 #'
 #' Function to compute the this-plate splines radial basis function for internal use by the function make.M().
 #'@param x is a Euclidean distance between two points.
-#'@param even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
+#'@param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
 #'@keywords thin-plate spline basis function
 #'@return The resulting value of the thin-pkate spline radial basis function
 #'@details This fucntion computes the thin-plate spline radial basis function depending on the if d is odd or even.
@@ -15,7 +15,7 @@
 #'data(meuse.all)
 #'coordinates(meuse.all)<-~x+y
 #'X<-scale(coordinates(meuse.all))
-#'D<-as.matrix(distance(X))
+#'D<-as.matrix(dist(X))
 #'K<-tps.rbf(D,TRUE)
 
 tps.rbf<-function(x,is.even)
@@ -54,10 +54,6 @@ tps.rbf<-function(x,is.even)
 #'X<-scale(coordinates(meuse.all))
 #'make.M(X)
 
-
-
-
-
 make.M<-function(X)
 {
   X<-as.matrix(X)
@@ -81,9 +77,9 @@ make.M<-function(X)
   H<-matrix(0,n,n)
   H[-c(1:d),-c(1:d)]<-crossprod(KF2,F2)
   G.inv<-qr.solve(G)
-  tGH<-t(G.inv)%*%H
-  M<-tGH%*%G.inv
-  M.eigen<-eigen(M,symmetric = TRUE)
+  HG<-crossprod(H,G.inv)
+  M<-crossprod(HG,G.inv)
+    M.eigen<-eigen(M,symmetric = TRUE)
   return(list(M=M,M.eigen=M.eigen))
 }
 
@@ -340,9 +336,8 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
   m<-length(y)
   MU<-rep(0,m)
   COV<-diag(rep(1,m))
-  X<-mvnfast::rmvn(N,MU,COV,ncores) ## it may be even faster to use a halton sequence
-  tVy<-t(V)%*%y
-
+  X<-mvnfast::rmvn(N,MU,COV,ncores)
+  tVy<-crossprod(V,y)
   sample.nu.post<-function(i)
   {
     lambda<-1/(1+eta[i]*ev)
@@ -405,7 +400,7 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),ncores=1)
+#'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
 
 DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE,ncores=1)
 {
@@ -513,7 +508,7 @@ DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE,ncores=1)
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001))
+#'OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
 #'
 #'Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
 
@@ -523,13 +518,26 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1) ##  function to generate samp
   ##  Needs to be able to sample from posterior predicitive of nu_pred as well
   ##  First draw nu_pred then use that to draw y_pred from likelihood
 
+  ##  Fix this so that  if nu is missing it is
+  ##  computed first then the predict scheme is run.
+
   #  Extract components from dssp.model
 
   x<-dssp.model$X
   y<-dssp.model$Y
   eta<-dssp.model$eta
   delta<-dssp.model$delta
-  nu<-dssp.model$nu
+
+  if("nu"%in%names(dssp.model))
+  {
+    nu<-dssp.model$nu
+  }
+  else
+  {
+    m<-make.M(x)
+    nu<-sample.nu(y,eta,delta,m$M.eigen$values,m$M.eigen$vectors,ncores = ncores)
+  }
+
 
   N<-length(eta)
   n<-length(y)

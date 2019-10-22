@@ -9,7 +9,7 @@ make.Q(y, V)
 \arguments{
 \item{y}{a vector of observed data}
 
-\item{V}{a matrix of eigen vecotors from the precision matrix computed by make.M()}
+\item{V}{a matrix of eigen vectors from the precision matrix computed by make.M()}
 }
 \value{
 A vector Q = y' V which is used in subsequent functions for sampling

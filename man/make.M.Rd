@@ -14,7 +14,7 @@ A list containing the precision matrix M and the object M.eigen containing
  eigenvalues and eigenvectors for the matrix M.
 }
 \description{
-This function creates the precision matrix for the spaitial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
+This function creates the precision matrix for the spatial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
 }
 \details{
 The M matrix is the precision matrix for the

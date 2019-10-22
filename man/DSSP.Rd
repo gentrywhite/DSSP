@@ -4,7 +4,7 @@
 \alias{DSSP}
 \title{Wrapper function to draw samples from the Direct Sampling Spatial Prior (DSSP) model}
 \usage{
-DSSP(N, x, y, log_prior, pars, ncores = 1)
+DSSP(N, x, y, log_prior, pars, fitted.values = FALSE, ncores = 1)
 }
 \arguments{
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu}
@@ -20,9 +20,11 @@ direct sampling spatial prior (DSSP).}
 inverse-gamma prior distribution of delta, the variance parameter for the
 Gaussian likelihood.}
 
+\item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
+
 \item{ncores}{number of cores to use when sampling from the distribution of nu, defaults to 1.
 This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-the user's system has OpenMP installed and pacakges are set to build with OpenMp enabled.
+the user's system has OpenMP installed and pacakges are set to build with OpenMP enabled.
 Please see the documentation for the mvnfast package for further details.}
 }
 \value{
@@ -30,7 +32,7 @@ A list containing N samples of nu, eta, delta, and the original data X and Y.
 }
 \description{
 This function samples from the log-posterior of all parameters in the model and returns a list
-   object containing the samples. It performs a few compatability checks on the inputs, then
+   object containing the samples. It performs a few compatibility checks on the inputs, then
    calls the sample.eta(), sample.delta(), and sample.nu().
 }
 \details{
@@ -42,7 +44,7 @@ The direct sampling spatial prior model assumes that the spatial model can be wr
  \deqn{\pi(nu | eta) propto (det(M)/2\pi)^{1/2} * exp(-eta nu' M nu/2),}
  the prior for delta is assumed to be a inverse-gamma distribution
  \deqn{(delta) ~ IG(a,b)}
- and the prior for eta can be specificed for the user as any valid density function for eta > 0.
+ and the prior for eta can be specified for the user as any valid density function for eta > 0.
 }
 \examples{
 ## Use the Meuse River dataset from the package 'gstat'
@@ -59,7 +61,7 @@ f<-function(x) -x ## log-prior for exponential distribution for the smoothing pa
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),ncores=1)
+OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
 }
 \keyword{prior,}
 \keyword{spatial}
