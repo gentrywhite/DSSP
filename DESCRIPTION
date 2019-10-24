@@ -13,7 +13,8 @@ Encoding: UTF-8
 Imports: rust, 
 	mvnfast, 
 	gstat, 
-	sp
+	sp,
+	doParallel
 Suggests: knitr,
 	ggplot2
 VignetteBuilder: knitr

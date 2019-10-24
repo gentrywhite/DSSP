@@ -5,7 +5,7 @@
 #'@param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
 #'@keywords thin-plate spline basis function
 #'@return The resulting value of the thin-pkate spline radial basis function
-#'@details This fucntion computes the thin-plate spline radial basis function depending on the if d is odd or even.
+#'@details This function computes the thin-plate spline radial basis function depending on the if d is odd or even.
 #'@export
 #'@examples
 #'## Use the Meuse River dataset from the package 'gstat'
