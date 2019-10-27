@@ -4,7 +4,7 @@
 #'@param x is a Euclidean distance between two points.
 #'@param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
 #'@keywords thin-plate spline basis function
-#'@return The resulting value of the thin-pkate spline radial basis function
+#'@return The resulting value of the thin-plate spline radial basis function
 #'@details This function computes the thin-plate spline radial basis function depending on the if d is odd or even.
 #'@export
 #'@examples
@@ -79,40 +79,8 @@ make.M<-function(X)
   G.inv<-qr.solve(G)
   HG<-crossprod(H,G.inv)
   M<-crossprod(HG,G.inv)
-    M.eigen<-eigen(M,symmetric = TRUE)
+  M.eigen<-eigen(M,symmetric = TRUE)
   return(list(M=M,M.eigen=M.eigen))
-}
-
-#' Data Vector Function
-#'
-#'This function creates the the data vector for evaluating the joint posterior distribution of
-#'    the direct sampling spatial prior (DSSP) model.
-#'@param y a vector of observed data
-#'@param V a matrix of eigen vectors from the precision matrix computed by make.M()
-#'@keywords spatial prior, thin-plate splines
-#'@return A vector Q = y' V which is used in subsequent functions for sampling
-#'  from the  joint posterior distribution.
-#'@export
-#'@examples
-#'#'## Use the Meuse River dataset from the package 'gstat'
-#'
-#'library(sp)
-#'library(gstat)
-#'data(meuse.all)
-#'coordinates(meuse.all)<-~x+y
-#'X<-scale(coordinates(meuse.all))
-#'tmp<-make.M(X)
-#'
-#'EV<-tmp$M.eigen$values
-#'V<-tmp$M.eigen$vectors
-#'
-#'Y<-scale(log(meuse.all$zinc))
-#'Q<-make.Q(Y,V)
-
-make.Q<-function(y,V)
-{
-  Q<-crossprod(y,V)
-  return(Q)
 }
 
 #' Log-posterior of smoothing parameter
@@ -121,8 +89,9 @@ make.Q<-function(y,V)
 #'    direct sampling spatial prior (DSSP).
 #'@param eta the value of the smoothing parameter, note that eta > 0.
 #'@param nd the rank of the precision matrix, the default value is n-3 for spatial data.
-#'@param ev eigenvalues of the precision matrix spatial prior from the function make.m().
-#'@param Q the data vector from the make.Q function.
+#'@param Y the vector of observed data
+#'@param M the precision matrix M of the prior for the coefficients.
+#'@param X The model design matrix.
 #'@param log_prior the log prior density of smoothing parameter.
 #'@keywords spatial prior, thin-plate splines
 #'@return The log of the posterior density of eta evaluated at eta = x.
@@ -137,11 +106,9 @@ make.Q<-function(y,V)
 #'X<-scale(coordinates(meuse.all))
 #'tmp<-make.M(X)
 #'
-#'EV<-tmp$M.eigen$values
-#'V<-tmp$M.eigen$vectors
+#'M<-tmp$M
 #'
 #'Y<-scale(log(meuse.all$zinc))
-#'Q<-make.Q(Y,V)
 #'
 #'ND<-nrow(X)-3
 #'f<-function(x) -x ## log of the exponential density with E(x) = 1.
@@ -149,18 +116,18 @@ make.Q<-function(y,V)
 #'## Evaluate the log posterior of eta|y at eta=0.3
 #'## This function is mainly for internal use only.
 #'
-#'eta.post(0.3,ND,EV,Q,f)
+#'eta.post(0.3,ND,Y,M,X,f)
 
-eta.post<-function(eta,nd,ev,Q,log_prior)  ## posterior of eta|y
+eta.post<-function(eta,nd,Y,M,X,log_prior)
 {
-  arg1<-(1+eta*ev)
-  a<--sum(log(arg1))
-  lambda<-1/arg1
-  alpha<-nd*0.5
-  arg2<-tcrossprod(Q,diag(1-lambda))
-  beta<-0.5*tcrossprod(Q,arg2)
-  ans<-0.5*a+alpha*log(eta)-(alpha)*log(beta)+lgamma(alpha)+log_prior(eta)
-  return(ans)
+LOGETA<-log(eta)
+PREC<-crossprod(X,X)+eta*M
+CHOLPREC<-chol(PREC)
+COV<-chol2inv(CHOLPREC)
+DETPREC<-determinant(PREC,logarithm = TRUE)$modulus
+DEN<-0.5*t(Y)%*%(diag(1,nrow(PREC))-COV)%*%Y
+ANS<-0.5*(nd*LOGETA-DETPREC-nd*log(DEN))+lgamma(0.5*nd)+log_prior(eta)
+return(ANS)
 }
 
 #' Function to sample from the posterior of the smoothing parameter eta conditioned on the data
@@ -329,7 +296,7 @@ sample.delta<-function(eta,nd,ev,Q,pars)
 
 ##  New and much faster version of sample.nu() 20X speed increase.
 
-sample.nu<-function(y,eta,delta,ev,V,ncores=1)
+sample.nu<-function(y,eta,delta,ev,V,ncores=nc)
 {
 
   N<-length(eta)
@@ -337,14 +304,17 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
   MU<-rep(0,m)
   COV<-diag(rep(1,m))
   X<-mvnfast::rmvn(N,MU,COV,ncores)
-  tVy<-crossprod(V,y)
+  tVy<-crossprod(y,V)
   sample.nu.post<-function(i)
   {
     lambda<-1/(1+eta[i]*ev)
+    diag.lambda<-diag(lambda)
     lambda.sqrt<-sqrt(delta[i]*lambda)
-    r<-lambda.sqrt*X[i,]+diag(lambda)%*%tVy
+    lambda.sqrt.X<-lambda.sqrt*X[i,]
+    diag.lambda.tVy<-tcrossprod(diag.lambda,tVy)
+    r<-lambda.sqrt.X+diag.lambda.tVy
     V%*%r
-  }
+}
   nu<-sapply(1:N,sample.nu.post)
   return(nu)
 }
@@ -369,7 +339,7 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 #'@param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
 #'@param ncores number of cores to use when sampling from the distribution of nu, defaults to 1.
 #'    This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-#'    the user's system has OpenMP installed and pacakges are set to build with OpenMP enabled.
+#'    the user's system has OpenMP installed and packages are set to build with OpenMP enabled.
 #'    Please see the documentation for the mvnfast package for further details.
 #'@keywords spatial prior, thin-plate splines
 #'@keywords spatial prior, thin-plate splines
@@ -402,7 +372,7 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=1)
 #'
 #'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
 
-DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE,ncores=1)
+DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE)
 {
 #  UseMethod("DSSP")
   ##  Test Inputs
@@ -412,6 +382,8 @@ DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE,ncores=1)
   Y<-as.numeric(y)
   n<-length(y)
   pars<-as.numeric(pars)
+  delta<-numeric(length = N)
+  eta<-numeric(length = N)
 
   ##  If the prior specified is not a function then use exp(1) as prior
 
