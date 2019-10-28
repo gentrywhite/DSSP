@@ -18,7 +18,7 @@ The resulting value of the thin-pkate spline radial basis function
 Function to compute the this-plate splines radial basis function for internal use by the function make.M().
 }
 \details{
-This function computes the thin-plate spline radial basis function depending on the if d is odd or even.
+This fucntion computes the thin-plate spline radial basis function depending on the if d is odd or even.
 }
 \examples{
 ## Use the Meuse River dataset from the package 'gstat'
