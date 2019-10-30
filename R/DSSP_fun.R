@@ -137,11 +137,7 @@ make.Q<-function(y,V)
 #'X<-scale(coordinates(meuse.all))
 #'tmp<-make.M(X)
 #'
-#'EV<-tmp$M.eigen$values
-#'V<-tmp$M.eigen$vectors
-#'
-#'Y<-scale(log(meuse.all$zinc))
-#'Q<-make.Q(Y,V)
+#'M<-tmp$M
 #'
 #'ND<-nrow(X)-3
 #'f<-function(x) -x ## log of the exponential density with E(x) = 1.
@@ -149,18 +145,19 @@ make.Q<-function(y,V)
 #'## Evaluate the log posterior of eta|y at eta=0.3
 #'## This function is mainly for internal use only.
 #'
-#'eta.post(0.3,ND,EV,Q,f)
+#'eta.post(0.3,ND,Y,M,f)
 
-eta.post<-function(eta,nd,ev,Q,log_prior)  ## posterior of eta|y
+eta.post<-function(eta,nd,Y,M,log_prior)
 {
-  arg1<-(1+eta*ev)
-  a<--sum(log(arg1))
-  lambda<-1/arg1
-  alpha<-nd*0.5
-  arg2<-tcrossprod(Q,diag(1-lambda))
-  beta<-0.5*tcrossprod(Q,arg2)
-  ans<-0.5*a+alpha*log(eta)-(alpha)*log(beta)+lgamma(alpha)+log_prior(eta)
-  return(ans)
+alpha<-0.5*nd
+n<-length(Y)
+prec<-diag(1,n)+eta*M
+detprec<--0.5*determinant(prec,log=TRUE)$modulus
+cholprec<-chol(prec)
+invprec<-chol2inv(cholprec)
+YY<-crossprod(Y,Y)
+beta<-0.5*(YY-t(Y)%*%invprec%*%Y)
+detprec+alpha*(log(eta)-log(beta))+lgamma(alpha)+log_prior(eta)
 }
 
 #' Function to sample from the posterior of the smoothing parameter eta conditioned on the data
@@ -200,11 +197,11 @@ eta.post<-function(eta,nd,ev,Q,log_prior)  ## posterior of eta|y
 #'
 #'sample.eta(100,ND,EV,Q,f,UL=1000)
 
-sample.eta<-function(N,nd,ev,Q,log_prior,UL=1000)
+sample.eta<-function(N,nd,Y,M,log_prior,UL=1000)
 {
   f.eta<-function(x)
   {
-    eta.post(x,nd,ev,Q,log_prior)
+    eta.post(x,nd,Y,M,log_prior)
   }
 
 #  Set up the function for the ratio of uniforms algorithm
@@ -212,9 +209,9 @@ sample.eta<-function(N,nd,ev,Q,log_prior,UL=1000)
   find.mode<-optim(1,function(x) -f.eta(x),lower=0.0000001,upper=Inf,method="L-BFGS-B")$par
   IC<-f.eta(find.mode)
   f.eta.sc<-function(x) f.eta(x)-IC
-  ptr<-create_xptr("preeta")
-  ru.res<-rust:ru_rcpp(ptr,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC",ev=EV,Q=Q,nd=nd)
-#  ru.res<-rust::ru(f.eta.sc,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC")
+#  ptr<-create_xptr("preeta")
+#  ru.res<-rust:ru_rcpp(ptr,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC",ev=EV,Q=Q,nd=nd)
+  ru.res<-rust::ru(f.eta.sc,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC")
   return(ru.res$sim_vals)
 
 }
@@ -241,27 +238,32 @@ sample.eta<-function(N,nd,ev,Q,log_prior,UL=1000)
 #'X<-scale(coordinates(meuse.all))
 #'tmp<-make.M(X)
 #'
-#'EV<-tmp$M.eigen$values
-#'V<-tmp$M.eigen$vectors
+#'M<-tmp$M
 #'
 #'Y<-scale(log(meuse.all$zinc))
-#'Q<-make.Q(Y,V)
 #'
 #'ND<-nrow(X)-3
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
+#'ETA<-sample.eta(100,ND,Y,M,f,UL=1000)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
 
-sample.delta<-function(eta,nd,ev,Q,pars)
+sample.delta<-function(eta,nd,Y,M,pars)
 {
   N<-length(eta)
   f.beta<-function(x)
   {
-    lambda<-1/(1+x*ev)
-    b<-tcrossprod(Q,diag(1-lambda))
-    beta<-0.5*tcrossprod(Q,b)+pars[2]
+    prec<-diag(1,n)+eta*M
+    detprec<--0.5*determinant(prec,log=TRUE)$modulus
+    cholprec<-chol(prec)
+    invprec<-chol2inv(cholprec)
+    YY<-crossprod(Y,Y)
+    beta<-0.5*(YY-t(Y)%*%invprec%*%Y)
+
+#    lambda<-1/(1+x*ev)
+#    b<-tcrossprod(Q,diag(1-lambda))
+#    beta<-0.5*tcrossprod(Q,b)+pars[2]
     return(beta)
   }
   alpha<-pars[1]+nd*0.5
@@ -342,13 +344,18 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=nc)
   tVy<-crossprod(y,V)
   sample.nu.post<-function(i)
   {
-    lambda<-1/(1+eta[i]*ev)
-    diag.lambda<-diag(lambda)
-    lambda.sqrt<-sqrt(delta[i]*lambda)
-    lambda.sqrt.X<-lambda.sqrt*X[i,]
-    diag.lambda.tVy<-tcrossprod(diag.lambda,tVy)
-    r<-lambda.sqrt.X+diag.lambda.tVy
-    V%*%r
+    PREC<-(diag(1,m)+eta[i]*M)
+    CHOLPREC<-chol(PREC)
+    SMOOTHE<-chol2inv(CHOLPREC)
+    MU<-SMOOTHE%*%Y
+    MU+sqrt(delta[i])*solve(CHOLPREC)%*%X[i,]
+#    lambda<-1/(1+eta[i]*ev)
+#    diag.lambda<-diag(lambda)
+#    lambda.sqrt<-sqrt(delta[i]*lambda)
+#    lambda.sqrt.X<-lambda.sqrt*X[i,]
+#    diag.lambda.tVy<-tcrossprod(diag.lambda,tVy)
+#    r<-lambda.sqrt.X+diag.lambda.tVy
+#    V%*%r
 }
   nu<-sapply(1:N,sample.nu.post)
   return(nu)
