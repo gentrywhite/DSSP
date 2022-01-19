@@ -4,23 +4,18 @@
 \alias{sample.nu}
 \title{Function to sample from the posterior of the spatial effects}
 \usage{
-sample.nu(y, eta, delta, ev, V, ncores = 1)
+sample.nu(Y, eta, delta, EV, V)
 }
 \arguments{
-\item{y}{vector of observed data}
+\item{Y}{vector of observed data}
 
 \item{eta}{samples of the smoothing parameter from the sample.eta function}
 
 \item{delta}{samples of the variance parameter from the sample.delta function}
 
-\item{ev}{eigenvalues of the precision matrix spatial prior from the function make.M()}
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M()}
 
 \item{V}{eigenvectors of the precision matrix spatial prior from the function make.M()}
-
-\item{ncores}{number of cores to use when sampling from the distribution of nu, defaults to 1.
-This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-the user's system has OpenMP installed and pacakges are set to build with OpenMp enabled.
-Please see the documentation for the mvnfast package for further details.}
 }
 \value{
 A matrix of samples with each column a random draw from the posterior
@@ -52,7 +47,7 @@ f<-function(x) -x ## log-prior for exponential distribution for the smoothing pa
 
 ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
 DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
-NU<-sample.nu(Y,ETA,DELTA,EV,V,ncores=1)
+NU<-sample.nu(Y,ETA,DELTA,EV,V)
 }
 \keyword{prior,}
 \keyword{spatial}

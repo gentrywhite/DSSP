@@ -4,14 +4,14 @@
 \alias{sample.delta}
 \title{Function to sample from the posterior of the variance parameter}
 \usage{
-sample.delta(eta, nd, ev, Q, pars)
+sample.delta(eta, ND, EV, Q, pars)
 }
 \arguments{
 \item{eta}{samples of the smoothing parameter from the sample.eta function.}
 
-\item{nd}{the rank of the precision matrix, the default value is n-3 for spatial data.}
+\item{ND}{the rank of the precision matrix, the default value is n-3 for spatial data.}
 
-\item{ev}{eigenvalues of the precision matrix spatial prior from the function make.m().}
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.m().}
 
 \item{Q}{the data vector from the make.Q function.}
 
@@ -34,13 +34,17 @@ coordinates(meuse.all)<-~x+y
 X<-scale(coordinates(meuse.all))
 tmp<-make.M(X)
 
-EV<-tmp$M.eigen$values
-V<-tmp$M.eigen$vectors
+M<-tmp$M
 
 Y<-scale(log(meuse.all$zinc))
-Q<-make.Q(Y,V)
 
 ND<-nrow(X)-3
+M.list<-make.M(X) ##  Only Needs to return the eigenvalues and vectors
+M<-M.list$M
+EV<-M.list$M.eigen$values
+V<-M.list$M.eigen$vectors
+Q<-make.Q(Y,V)
+
 f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 ## Draw 100 samples from the posterior of eta given the data y.
 

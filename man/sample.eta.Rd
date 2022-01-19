@@ -5,21 +5,21 @@
 \title{Function to sample from the posterior of the smoothing parameter eta conditioned on the data
    y.}
 \usage{
-sample.eta(N, nd, ev, Q, log_prior, UL = 1000)
+sample.eta(N, ND, EV, Q, UL = 1000, log_prior)
 }
 \arguments{
 \item{N}{the number of samples desired.}
 
-\item{nd}{the rank of the precision matrix, the default value is n-3 for spatial data.}
+\item{ND}{the rank of the precision matrix, the default value is n-3 for spatial data.}
 
-\item{ev}{eigenvalues of the precision matrix spatial prior from the function make.m().}
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M().}
 
 \item{Q}{the data vector from the make.Q function.}
 
-\item{log_prior}{the log prior density of smoothing parameter.}
-
 \item{UL}{the upper limit for the smoothing parameter value; used for the
 ratio-of-uniform sampler, default is 1000.}
+
+\item{log_prior}{a function of x evaluating the log of the prior dentisy for eta}
 }
 \value{
 N samples drawn from the posterior of eta given the data y \eqn{\pi(eta | y)}.
@@ -41,6 +41,8 @@ tmp<-make.M(X)
 EV<-tmp$M.eigen$values
 V<-tmp$M.eigen$vectors
 
+M<-tmp$M
+
 Y<-scale(log(meuse.all$zinc))
 Q<-make.Q(Y,V)
 
@@ -48,7 +50,7 @@ ND<-nrow(X)-3
 f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 ## Draw 100 samples from the posterior of eta given the data y.
 
-sample.eta(100,ND,EV,Q,f,UL=1000)
+sample.eta(100,ND,EV,Q,UL=1000,f)
 }
 \keyword{prior,}
 \keyword{spatial}

@@ -41,7 +41,7 @@ f<-function(x) -x ## log-prior for exponential distribution for the smoothing pa
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
+OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE)
 
 Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
 }

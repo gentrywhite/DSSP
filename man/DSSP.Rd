@@ -2,9 +2,9 @@
 % Please edit documentation in R/DSSP_fun.R
 \name{DSSP}
 \alias{DSSP}
-\title{Wrapper function to draw samples from the Direct Sampling Spatial Prior (DSSP) model}
+\title{DSSP}
 \usage{
-DSSP(N, x, y, log_prior, pars, fitted.values = FALSE, ncores = 1)
+DSSP(N, x, y, log_prior, pars, fitted.values = FALSE)
 }
 \arguments{
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu}
@@ -13,8 +13,7 @@ DSSP(N, x, y, log_prior, pars, fitted.values = FALSE, ncores = 1)
 
 \item{y}{vector of obsered data}
 
-\item{log_prior}{the log-prior density for the prior of the smoothing parameter of the
-direct sampling spatial prior (DSSP).}
+\item{log_prior}{a function evaluating the log of ther prior density of eta}
 
 \item{pars}{a vector of the prior shape and rate parameters for the
 inverse-gamma prior distribution of delta, the variance parameter for the
@@ -22,20 +21,21 @@ Gaussian likelihood.}
 
 \item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
 
-\item{ncores}{number of cores to use when sampling from the distribution of nu, defaults to 1.
-This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-the user's system has OpenMP installed and pacakges are set to build with OpenMP enabled.
-Please see the documentation for the mvnfast package for further details.}
+\item{V}{eigenvectors of the precision matrix spatial prior from the function make.M()}
 }
 \value{
 A list containing N samples of nu, eta, delta, and the original data X and Y.
 }
 \description{
+does some DSSP stuff
+
 This function samples from the log-posterior of all parameters in the model and returns a list
    object containing the samples. It performs a few compatibility checks on the inputs, then
    calls the sample.eta(), sample.delta(), and sample.nu().
 }
 \details{
+DSSP R Functions
+
 The direct sampling spatial prior model assumes that the spatial model can be written
  as the likelihood parameterised with mean vector nu and variance delta
  \deqn{(y | nu, delta) ~ N(nu, delta * I)}
@@ -61,7 +61,7 @@ f<-function(x) -x ## log-prior for exponential distribution for the smoothing pa
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
+OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE)
 }
 \keyword{prior,}
 \keyword{spatial}

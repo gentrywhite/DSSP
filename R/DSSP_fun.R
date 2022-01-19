@@ -1,6 +1,15 @@
+#' DSSP R Functions
+#' @title DSSP
+#' @name DSSP
+#' @description does some DSSP stuff
+## usethis namespace: start
+#' @useDynLib DSSPcpp, .registration = TRUE
+#' @importFrom Rcpp sourceCpp
+## usethis namespace: end
+NULL
 #' TPS radial basis function
 #'
-#' Function to compute the this-plate splines radial basis function for internal use by the function make.M().
+#' Function to compute the thin-plate splines radial basis function for internal use by the function make.M().
 #'@param x is a Euclidean distance between two points.
 #'@param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
 #'@keywords thin-plate spline basis function
@@ -19,19 +28,17 @@
 #'K<-tps.rbf(D,TRUE)
 
 tps.rbf<-function(x,is.even)
+{
+  if(is.even==FALSE)
   {
-    if(is.even==FALSE)
-      {
-        x^2
-      }
-    else
-      {
-        log(x)*x^2
-      }
+    x^2
   }
+  else
+  {
+    log(x)*x^2
+  }
+}
 
-#'
-#
 #' Precision Matrix Function
 #'
 #'This function creates the precision matrix for the spatial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
@@ -61,9 +68,9 @@ make.M<-function(X)
   dimX<-ncol(X)
   even<-dimX%%2==0
   deg<-trunc(dimX/2+1)-1
-  Tmat<-cbind(1,poly(X,degree=deg,raw=TRUE))
+  Tmat<-cbind(1,stats::poly(X,degree=deg,raw=TRUE))
   d<-ncol(Tmat)
-  D<-as.matrix(dist(X))
+  D<-as.matrix(stats::dist(X))
   ind0<-D!=0
   K<-D
   K[ind0]<-tps.rbf(D[ind0],even)
@@ -79,7 +86,8 @@ make.M<-function(X)
   G.inv<-qr.solve(G)
   HG<-crossprod(H,G.inv)
   M<-crossprod(HG,G.inv)
-    M.eigen<-eigen(M,symmetric = TRUE)
+  M<-as.matrix(Matrix::forceSymmetric(M))
+  M.eigen<-eigen(M,symmetric = TRUE)
   return(list(M=M,M.eigen=M.eigen))
 }
 
@@ -115,63 +123,18 @@ make.Q<-function(y,V)
   return(Q)
 }
 
-#' Log-posterior of smoothing parameter
-#'
-#'This function evaluates the log-posterior density of the smoothing parameter from the
-#'    direct sampling spatial prior (DSSP).
-#'@param eta the value of the smoothing parameter, note that eta > 0.
-#'@param nd the rank of the precision matrix, the default value is n-3 for spatial data.
-#'@param ev eigenvalues of the precision matrix spatial prior from the function make.m().
-#'@param Q the data vector from the make.Q function.
-#'@param log_prior the log prior density of smoothing parameter.
-#'@keywords spatial prior, thin-plate splines
-#'@return The log of the posterior density of eta evaluated at eta = x.
-#'@export
-#'@examples
-#'## Use the Meuse River dataset from the package 'gstat'
-#'
-#'library(sp)
-#'library(gstat)
-#'data(meuse.all)
-#'coordinates(meuse.all)<-~x+y
-#'X<-scale(coordinates(meuse.all))
-#'tmp<-make.M(X)
-#'
-#'M<-tmp$M
-#'
-#'ND<-nrow(X)-3
-#'f<-function(x) -x ## log of the exponential density with E(x) = 1.
-#'
-#'## Evaluate the log posterior of eta|y at eta=0.3
-#'## This function is mainly for internal use only.
-#'
-#'eta.post(0.3,ND,Y,M,f)
-
-eta.post<-function(eta,nd,Y,M,log_prior)
-{
-alpha<-0.5*nd
-n<-length(Y)
-prec<-diag(1,n)+eta*M
-detprec<--0.5*determinant(prec,log=TRUE)$modulus
-cholprec<-chol(prec)
-invprec<-chol2inv(cholprec)
-YY<-crossprod(Y,Y)
-beta<-0.5*(YY-t(Y)%*%invprec%*%Y)
-detprec+alpha*(log(eta)-log(beta))+lgamma(alpha)+log_prior(eta)
-}
-
 #' Function to sample from the posterior of the smoothing parameter eta conditioned on the data
 #'    y.
 #'
 #'This function samples from the log-posterior density of the smoothing parameter from the
 #'   thin-plate splines based spatial prior using a ratio-of-uniform sampler.
 #'@param N the number of samples desired.
-#'@param nd the rank of the precision matrix, the default value is n-3 for spatial data.
-#'@param ev eigenvalues of the precision matrix spatial prior from the function make.m().
-#'@param log_prior the log prior density of smoothing parameter.
+#'@param ND the rank of the precision matrix, the default value is n-3 for spatial data.
+#'@param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #'@param Q the data vector from the make.Q function.
 #'@param UL the upper limit for the smoothing parameter value; used for the
 #'  ratio-of-uniform sampler, default is 1000.
+#'@param log_prior a function of x evaluating the log of the prior dentisy for eta  
 #'@keywords spatial prior, thin-plate splines
 #'@return N samples drawn from the posterior of eta given the data y \eqn{\pi(eta | y)}.
 #'@export
@@ -188,6 +151,8 @@ detprec+alpha*(log(eta)-log(beta))+lgamma(alpha)+log_prior(eta)
 #'EV<-tmp$M.eigen$values
 #'V<-tmp$M.eigen$vectors
 #'
+#'M<-tmp$M
+#'
 #'Y<-scale(log(meuse.all$zinc))
 #'Q<-make.Q(Y,V)
 #'
@@ -195,33 +160,20 @@ detprec+alpha*(log(eta)-log(beta))+lgamma(alpha)+log_prior(eta)
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'sample.eta(100,ND,EV,Q,f,UL=1000)
-
-sample.eta<-function(N,nd,Y,M,log_prior,UL=1000)
+#'sample.eta(100,ND,EV,Q,UL=1000,f)
+sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 {
-  f.eta<-function(x)
-  {
-    eta.post(x,nd,Y,M,log_prior)
-  }
-
-#  Set up the function for the ratio of uniforms algorithm
-
-  find.mode<-optim(1,function(x) -f.eta(x),lower=0.0000001,upper=Inf,method="L-BFGS-B")$par
-  IC<-f.eta(find.mode)
-  f.eta.sc<-function(x) f.eta(x)-IC
-#  ptr<-create_xptr("preeta")
-#  ru.res<-rust:ru_rcpp(ptr,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC",ev=EV,Q=Q,nd=nd)
-  ru.res<-rust::ru(f.eta.sc,n=N,d=1,upper=UL,lower=0.000001,init=find.mode,trans="BC")
-  return(ru.res$sim_vals)
-
+  RES<-rust::ru(function(x) eta_post_cpp(x,list(ND=ND,EV=EV,Q=Q))+log_prior(x),n=N,d=1,init=1,trans="BC",upper = UL)
+  return(RES$sim_vals)
 }
+
 
 #' Function to sample from the posterior of the variance parameter
 #'
 #'This function samples from the log-posterior density of the variance parameter from the likelihood
 #'@param eta samples of the smoothing parameter from the sample.eta function.
-#'@param nd the rank of the precision matrix, the default value is n-3 for spatial data.
-#'@param ev eigenvalues of the precision matrix spatial prior from the function make.m().
+#'@param ND the rank of the precision matrix, the default value is n-3 for spatial data.
+#'@param EV eigenvalues of the precision matrix spatial prior from the function make.m().
 #'@param Q the data vector from the make.Q function.
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta.
@@ -243,48 +195,32 @@ sample.eta<-function(N,nd,Y,M,log_prior,UL=1000)
 #'Y<-scale(log(meuse.all$zinc))
 #'
 #'ND<-nrow(X)-3
+#'M.list<-make.M(X) ##  Only Needs to return the eigenvalues and vectors
+#'M<-M.list$M
+#'EV<-M.list$M.eigen$values
+#'V<-M.list$M.eigen$vectors
+#'Q<-make.Q(Y,V)
+#'
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'ETA<-sample.eta(100,ND,Y,M,f,UL=1000)
+#'ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
 
-sample.delta<-function(eta,nd,Y,M,pars)
+sample.delta<-function(eta,ND,EV,Q,pars)
 {
-  N<-length(eta)
-  f.beta<-function(x)
-  {
-    prec<-diag(1,n)+eta*M
-    detprec<--0.5*determinant(prec,log=TRUE)$modulus
-    cholprec<-chol(prec)
-    invprec<-chol2inv(cholprec)
-    YY<-crossprod(Y,Y)
-    beta<-0.5*(YY-t(Y)%*%invprec%*%Y)
-
-#    lambda<-1/(1+x*ev)
-#    b<-tcrossprod(Q,diag(1-lambda))
-#    beta<-0.5*tcrossprod(Q,b)+pars[2]
-    return(beta)
-  }
-  alpha<-pars[1]+nd*0.5
-  beta<-sapply(eta,f.beta)
-  delta<-1/rgamma(N,shape=alpha,rate=beta)
-  return(delta)
+  sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
 }
 
 #' Function to sample from the posterior of the spatial effects
 #'
 #'This function samples from the posterior density of the spatial effects from the direct sampling
 #'  spatial prior (DSSP) model.
-#'@param y vector of observed data
+#'@param Y vector of observed data
 #'@param eta samples of the smoothing parameter from the sample.eta function
 #'@param delta samples of the variance parameter from the sample.delta function
-#'@param ev eigenvalues of the precision matrix spatial prior from the function make.M()
+#'@param EV eigenvalues of the precision matrix spatial prior from the function make.M()
 #'@param V eigenvectors of the precision matrix spatial prior from the function make.M()
-#'@param ncores number of cores to use when sampling from the distribution of nu, defaults to 1.
-#'    This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-#'    the user's system has OpenMP installed and pacakges are set to build with OpenMp enabled.
-#'    Please see the documentation for the mvnfast package for further details.
 #'@keywords spatial prior, thin-plate splines
 #'@keywords spatial prior, thin-plate splines
 #'@return A matrix of samples with each column a random draw from the posterior
@@ -312,11 +248,11 @@ sample.delta<-function(eta,nd,Y,M,pars)
 #'
 #'ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
-#'NU<-sample.nu(Y,ETA,DELTA,EV,V,ncores=1)
+#'NU<-sample.nu(Y,ETA,DELTA,EV,V)
 
 ##  Old Slow Version of sample.nu()
 
-# sample.nu<-function(y,eta,delta,ev,V,ncores=1)
+# sample.nu<-function(y,eta,delta,M,ncores=parallel::detectCores())
 # {
 #   N<-length(eta)
 #   sample.nu.post<-function(i)
@@ -333,32 +269,9 @@ sample.delta<-function(eta,nd,Y,M,pars)
 
 ##  New and much faster version of sample.nu() 20X speed increase.
 
-sample.nu<-function(y,eta,delta,ev,V,ncores=nc)
+sample.nu<-function(Y,eta,delta,EV,V)
 {
-
-  N<-length(eta)
-  m<-length(y)
-  MU<-rep(0,m)
-  COV<-diag(rep(1,m))
-  X<-mvnfast::rmvn(N,MU,COV,ncores)
-  tVy<-crossprod(y,V)
-  sample.nu.post<-function(i)
-  {
-    PREC<-(diag(1,m)+eta[i]*M)
-    CHOLPREC<-chol(PREC)
-    SMOOTHE<-chol2inv(CHOLPREC)
-    MU<-SMOOTHE%*%Y
-    MU+sqrt(delta[i])*solve(CHOLPREC)%*%X[i,]
-#    lambda<-1/(1+eta[i]*ev)
-#    diag.lambda<-diag(lambda)
-#    lambda.sqrt<-sqrt(delta[i]*lambda)
-#    lambda.sqrt.X<-lambda.sqrt*X[i,]
-#    diag.lambda.tVy<-tcrossprod(diag.lambda,tVy)
-#    r<-lambda.sqrt.X+diag.lambda.tVy
-#    V%*%r
-}
-  nu<-sapply(1:N,sample.nu.post)
-  return(nu)
+  sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V))
 }
 
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
@@ -373,16 +286,12 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=nc)
 #'@param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu
 #'@param x a matrix of spatial coordinates
 #'@param y vector of obsered data
-#'@param log_prior the log-prior density for the prior of the smoothing parameter of the
-#'    direct sampling spatial prior (DSSP).
+#'@param V eigenvectors of the precision matrix spatial prior from the function make.M()
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta, the variance parameter for the
 #'    Gaussian likelihood.
+#'@param log_prior a function evaluating the log of ther prior density of eta    
 #'@param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
-#'@param ncores number of cores to use when sampling from the distribution of nu, defaults to 1.
-#'    This is an optional argument to pass to rmvn() from the mvnfast package, it requries that
-#'    the user's system has OpenMP installed and packages are set to build with OpenMP enabled.
-#'    Please see the documentation for the mvnfast package for further details.
 #'@keywords spatial prior, thin-plate splines
 #'@keywords spatial prior, thin-plate splines
 #'@return A list containing N samples of nu, eta, delta, and the original data X and Y.
@@ -412,13 +321,13 @@ sample.nu<-function(y,eta,delta,ev,V,ncores=nc)
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
+#'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE)
 
 DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE)
 {
-#  UseMethod("DSSP")
+  #  UseMethod("DSSP")
   ##  Test Inputs
-
+  
   N<-as.integer(N)
   X<-as.matrix(x)
   Y<-as.numeric(y)
@@ -426,67 +335,66 @@ DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE)
   pars<-as.numeric(pars)
   delta<-numeric(length = N)
   eta<-numeric(length = N)
-
+  
   ##  If the prior specified is not a function then use exp(1) as prior
-
+  
   if(is.function(log_prior)==TRUE)
   {
     log_prior<-log_prior
   }
   else
   {
-    log_prior<-function(x) -x
+    log_prior<-function(x) -x ## default prior is exp(1)
   }
-
-
+  
+  
   ##  Declare dimentional constants
-
+  
   n<-length(Y)
-
+  
   d<-ncol(X)+1
-
+  
   nd<-n-d
-
+  ND<-n-d
+  
   ##  Compute M
-
+  
   M.list<-make.M(X) ##  Only Needs to return the eigenvalues and vectors
-
-  ##  Extract Vectors
-
-  V<-M.list$M.eigen$vectors
-
-  ##  Extract Values
-
+  
+  M<-M.list$M
+  
   EV<-M.list$M.eigen$values
-
-  ##  Compute Q
-
+  V<-M.list$M.eigen$vectors
   Q<-make.Q(Y,V)
-
+  
   ## sample eta
-
-  eta<-sample.eta(N,nd,EV,Q,log_prior,UL=1000)
-
+  
+  eta<-sample.eta(N,ND,EV,Q,log_prior,UL=1000)
+  
   ##  sample delta_0
-
-  delta<-sample.delta(eta,nd,EV,Q,pars)
-
+  
+  delta<-sample.delta(eta,ND,EV,Q,pars)
+  
   if(fitted.values == TRUE)
   {
     ##  sample nu
-
-    nu<-sample.nu(Y,eta,delta,EV,V,ncores=ncores)
-
+    
+    nu<-sample.nu(Y,eta,delta,EV,V)
+    
     return(list(eta=eta,delta=delta,nu=nu,X=X,Y=Y))
   }
-
+  
   else
   {
     return(list(eta=eta,delta=delta,X=X,Y=Y))
   }
-
-
+  
+  
 }
+
+# .onUnload <- function (libpath) {
+#   library.dynam.unload("DSSPcpp", libpath)
+# }
 
 ##  Predict method for DSSP
 
@@ -522,104 +430,88 @@ DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE)
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE,ncores=1)
+#'OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE)
 #'
 #'Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
 
-DSSP.predict<-function(dssp.model,x.pred,ncores=1) ##  function to generate samples
-{
+DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate samples
+  ## TODO ncores is probably unecessary for this function now with cpp version of smaple.nu()?
   ##  Needs the conditional predictive for y_pred and the output of eta, delta, and nu
   ##  Needs to be able to sample from posterior predicitive of nu_pred as well
   ##  First draw nu_pred then use that to draw y_pred from likelihood
-
+  
   ##  Fix this so that  if nu is missing it is
   ##  computed first then the predict scheme is run.
-
+  
   #  Extract components from dssp.model
-
+  
   x<-dssp.model$X
   y<-dssp.model$Y
   eta<-dssp.model$eta
   delta<-dssp.model$delta
-
-  if("nu"%in%names(dssp.model))
-  {
+  
+  if("nu"%in%names(dssp.model)){
     nu<-dssp.model$nu
-  }
-  else
-  {
+  }else{
     m<-make.M(x)
-    nu<-sample.nu(y,eta,delta,m$M.eigen$values,m$M.eigen$vectors,ncores = ncores)
+    nu<-sample.nu(y,eta,delta,m$M.eigen$values,m$M.eigen$vectors)
   }
-
-
   N<-length(eta)
   n<-length(y)
-
   X<-rbind(x,x.pred)
   m<-nrow(X)-n
   Y<-c(y,rep(0,m))
-
+  
   ##  Make augmented M matrix
-
-  M.list<-make.M(X)
-
+  M.list<-make.M(X) 
+  
   ##  Extract Vectors
-
   v<-M.list$M.eigen$vectors
-
+  
   ##  Extract Values
-
   ev<-M.list$M.eigen$values
-
+  
   ##  Write function for pi(y.pred|y,eta,delta,nu)
-
-  sample.y.pred<-function(i)
-  {
+  sample.y.pred<-function(i){
     ##  Compute S
-
     lambda<-1/(1+eta[i]*ev)
     S<-v%*%diag(lambda)%*%t(v)
     S.inv<-v%*%diag((1+eta[i]*ev))%*%t(v)
-
+    
     ##  Compute MU
-
     MU<-S%*%Y
-
+    
     ##  Compute Sigma
-
     SIGMA<-delta[i]*S
-
+    
     ##  Partition MU and SIGMA
-
     MU1<-MU[1:n]
     MU2<-MU[(n+1):(n+m)]
-
+    
     S11<-delta[i]*S.inv[1:n,1:n]
     S12<-SIGMA[1:n,(n+1):(n+m)]
     S21<-SIGMA[(n+1):(n+m),1:n]
     S22<-SIGMA[(n+1):(n+m),(n+1):(n+m)]
-
+    
     ##  Compute Residuals
-
-    RES<-nu[1:n,i]-MU1
-
+    # TODO
+    # RP I think that these dimensions for indexing nu were the wrong way around!
+    # either than or the input to sapply needs to be little n, rather than big N.
+    # RES<-nu[1:n,i]-MU1
+    RES<-nu[i, 1:n]-MU1
+    
     ##  Compute mu.pred and sigma.pred for y.pred
-
     MU.pred<-MU2+S21%*%S11%*%RES
     S.pred<-delta[i]*diag(1,m)+S22+S21%*%S11%*%S12
-
+    
     ##  Sample y.pred
-
     mvnfast::rmvn(1,mu=MU.pred,sigma=S.pred)
-
   }
-
   ##  Sample y.pred for all eta,delta,nu
-
-  y.pred<-sapply(1:N,sample.y.pred)
+  y.pred<-sapply(1:N,sample.y.pred) # TODO find out whether this should be 1:n or 1:N
+  # NOTE RP: changed inputs to sapply from 1:N to 1:n.
+  #          with 1:N, subscript was out of bounds for computing residuals.
+  # y.pred<-sapply(1:N,sample.y.pred)
   return(y.pred)
-
 }
-
 
