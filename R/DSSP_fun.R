@@ -207,9 +207,25 @@ sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 #'ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
 
-sample.delta<-function(eta,ND,EV,Q,pars)
+## sample.delta<-function(eta,ND,EV,Q,pars)
+## {
+##   sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
+## }
+
+sample.delta<-function(eta,nd,ev,Q,pars)
 {
-  sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
+  N<-length(eta)
+  f.beta<-function(x)
+  {
+    lambda<-1/(1+x*ev)
+    b<-tcrossprod(Q,diag(1-lambda))
+    beta<-0.5*tcrossprod(Q,b)+pars[2]
+    return(beta)
+  }
+  alpha<-pars[1]+nd*0.5
+  beta<-sapply(eta,f.beta)
+  delta<-1/rgamma(N,shape=alpha,rate=beta)
+  return(delta)
 }
 
 #' Function to sample from the posterior of the spatial effects
@@ -271,7 +287,7 @@ sample.delta<-function(eta,ND,EV,Q,pars)
 
 sample.nu<-function(Y,eta,delta,EV,V)
 {
-  sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V))
+  t(sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V)))
 }
 
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
@@ -497,8 +513,7 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
     # TODO
     # RP I think that these dimensions for indexing nu were the wrong way around!
     # either than or the input to sapply needs to be little n, rather than big N.
-    # RES<-nu[1:n,i]-MU1
-    RES<-nu[i, 1:n]-MU1
+    RES<-nu[1:n,i]-MU1
     
     ##  Compute mu.pred and sigma.pred for y.pred
     MU.pred<-MU2+S21%*%S11%*%RES
@@ -508,10 +523,7 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
     mvnfast::rmvn(1,mu=MU.pred,sigma=S.pred)
   }
   ##  Sample y.pred for all eta,delta,nu
-  y.pred<-sapply(1:N,sample.y.pred) # TODO find out whether this should be 1:n or 1:N
-  # NOTE RP: changed inputs to sapply from 1:N to 1:n.
-  #          with 1:N, subscript was out of bounds for computing residuals.
-  # y.pred<-sapply(1:N,sample.y.pred)
+  y.pred<-sapply(1:N,sample.y.pred)
   return(y.pred)
 }
 
