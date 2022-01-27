@@ -104,7 +104,6 @@ Next, we select the number of samples to draw and invoke the function DSSP().
 N<-10000  ## number of samples to draw from the DSSP model
 
 meuse.fit<-DSSP(N,X.train,Y.train,function(x) -2*log(1+x), fitted.values = TRUE,pars=c(0.001,0.001))
-
 ETA<-meuse.fit$eta
 DELTA<-meuse.fit$delta
 NU<-meuse.fit$nu
@@ -117,7 +116,7 @@ The function DSSP() takes as its argument $N$ the number of samples desired, $X$
 center.y<-attr(Y,"scaled:center")
 scale.y<-attr(Y,"scaled:scale")
 
-Yhat<-colMeans(exp(NU*scale.y+center.y)) # TODO RP CHANGED THIS FROM rowMeans to colMeans 
+Yhat<-rowMeans(exp(NU*scale.y+center.y))
 
 meuse$Yhat<-Yhat ## Model estimates of E(zinc concentration (ppm))
 meuse$Y.true<-meuse.all$zinc[1:155]
@@ -135,8 +134,6 @@ smooth.scatterplot<-ggplot(smooth.data,aes(x=Yhat,y=Y.true))+
   theme(plot.title = element_text(hjust=0.5))
 
 smooth.scatterplot
-
-
 ```
 
 
@@ -207,17 +204,9 @@ delta.cumsumplot
 
 
 ```{r,eval=TRUE,include=TRUE}
-##  Try predicting at new locations to see the differences
 Y.pred<-DSSP.predict(meuse.fit,X.pred)
-
 Y.pred<-exp(Y.pred*scale.y+center.y)
-```
 
-
-```{r,eval=TRUE,include=TRUE}
-##  Plot Results and compare the true values
-# TODO check why the pred.data are almost zero for all cases?
-# I used colMeans above instead of rowMeans but maybe that's not correct? it's rowMeans here and colMeans is the wrong dimensions
 pred.data<-data.frame(Yhat.pred=rowMeans(Y.pred),Y.true=meuse.all$zinc[156:164])
 
 pred.scatterplot<-ggplot(pred.data,aes(x=Yhat.pred,y=Y.true))+
