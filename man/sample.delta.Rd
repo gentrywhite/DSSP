@@ -4,19 +4,19 @@
 \alias{sample.delta}
 \title{Function to sample from the posterior of the variance parameter}
 \usage{
-sample.delta(eta, ND, EV, Q, pars)
+sample.delta(eta, nd, ev, Q, pars)
 }
 \arguments{
 \item{eta}{samples of the smoothing parameter from the sample.eta function.}
-
-\item{ND}{the rank of the precision matrix, the default value is n-3 for spatial data.}
-
-\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.m().}
 
 \item{Q}{the data vector from the make.Q function.}
 
 \item{pars}{a vector of the prior shape and rate parameters for the
 inverse-gamma prior distribution of delta.}
+
+\item{ND}{the rank of the precision matrix, the default value is n-3 for spatial data.}
+
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.m().}
 }
 \value{
 N samples drawn from the posterior of \eqn{\pi(delta | eta, y)}.
