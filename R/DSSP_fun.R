@@ -206,27 +206,28 @@ sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 #'
 #'ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
 #'DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
-
-## sample.delta<-function(eta,ND,EV,Q,pars)
+##  Old Slow Version of sample.nu()
+## sample.delta<-function(eta,nd,ev,Q,pars)
 ## {
-##   sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
+##   N<-length(eta)
+##   f.beta<-function(x)
+##   {
+##     lambda<-1/(1+x*ev)
+##     b<-tcrossprod(Q,diag(1-lambda))
+##     beta<-0.5*tcrossprod(Q,b)+pars[2]
+##     return(beta)
+##   }
+##   alpha<-pars[1]+nd*0.5
+##   beta<-sapply(eta,f.beta)
+##   delta<-1/rgamma(N,shape=alpha,rate=beta)
+##   return(delta)
 ## }
 
-sample.delta<-function(eta,nd,ev,Q,pars)
+sample.delta<-function(eta,ND,EV,Q,pars)
 {
-  N<-length(eta)
-  f.beta<-function(x)
-  {
-    lambda<-1/(1+x*ev)
-    b<-tcrossprod(Q,diag(1-lambda))
-    beta<-0.5*tcrossprod(Q,b)+pars[2]
-    return(beta)
-  }
-  alpha<-pars[1]+nd*0.5
-  beta<-sapply(eta,f.beta)
-  delta<-1/rgamma(N,shape=alpha,rate=beta)
-  return(delta)
+  sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
 }
+
 
 #' Function to sample from the posterior of the spatial effects
 #'
@@ -510,9 +511,6 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
     S22<-SIGMA[(n+1):(n+m),(n+1):(n+m)]
     
     ##  Compute Residuals
-    # TODO
-    # RP I think that these dimensions for indexing nu were the wrong way around!
-    # either than or the input to sapply needs to be little n, rather than big N.
     RES<-nu[1:n,i]-MU1
     
     ##  Compute mu.pred and sigma.pred for y.pred

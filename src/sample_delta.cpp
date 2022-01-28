@@ -38,7 +38,7 @@ arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
     LAMBDA = arma::diagmat(1-1/(1+ETA[i]*EV));
     B = Q*LAMBDA*Q.t();
     BETA = arma::as_scalar(B)*0.5+PARS[1];
-    Y[i] = V[i]/BETA;
+    Y[i] = BETA/V[i];
   }
   return Y;
 }

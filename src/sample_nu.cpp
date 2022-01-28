@@ -37,10 +37,12 @@ arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
 
   arma::mat LAMBDA(M,M,arma::fill::zeros);
   arma::mat LAMBDASQRT(M,M,arma::fill::zeros);
+  arma::vec LAMBDA_DIAG(M,arma::fill::zeros);
   for(int i = 0; i < N; ++i)
   {
-    LAMBDA = arma::diagmat(1/(1+ETA[i]*EV));
-    LAMBDASQRT = arma::diagmat(sqrt(DELTA[i]/(1+ETA[i]*EV)));
+	LAMBDA_DIAG = arma::vec(1/(1+ETA[i]*EV));
+    LAMBDA = arma::diagmat(LAMBDA_DIAG);
+    LAMBDASQRT = arma::diagmat(sqrt(DELTA[i]*LAMBDA_DIAG));
     s = S.row(i);
     MU = s*LAMBDASQRT;
     R = MU.t()+LAMBDA*tVy;
