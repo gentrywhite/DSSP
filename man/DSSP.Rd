@@ -20,8 +20,6 @@ inverse-gamma prior distribution of delta, the variance parameter for the
 Gaussian likelihood.}
 
 \item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
-
-\item{V}{eigenvectors of the precision matrix spatial prior from the function make.M()}
 }
 \value{
 A list containing N samples of nu, eta, delta, and the original data X and Y.

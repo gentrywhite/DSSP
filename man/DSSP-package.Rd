@@ -1,6 +1,5 @@
 \name{DSSP-package}
 \alias{DSSP-package}
-\alias{DSSP}
 \docType{package}
 \title{\packageTitle{DSSP}}
 \description{\packageDescription{DSSP}}
