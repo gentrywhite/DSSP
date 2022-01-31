@@ -11,7 +11,7 @@ sample.delta(eta, ND, EV, Q, pars)
 
 \item{ND}{the rank of the precision matrix, the default value is n-3 for spatial data.}
 
-\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.m().}
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M().}
 
 \item{Q}{the data vector from the make.Q function.}
 

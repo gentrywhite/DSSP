@@ -14,7 +14,7 @@ using namespace Rcpp;
 //   http://gallery.rcpp.org/
 //
 
-// [[Rcpp::export]]
+// [[Rcpp::export(.sample_delta_cpp)]]
 
 arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
 {

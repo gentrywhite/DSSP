@@ -26,7 +26,7 @@ using namespace Rcpp;
  *
  */
 //
-// [[Rcpp::export]]
+// [[Rcpp::export(.eta_post_cpp)]]
 double eta_post_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
 {
   // Read in the data
@@ -46,4 +46,3 @@ double eta_post_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
   double ans = arma::as_scalar(0.5*a+alpha*log(eta)-(alpha)*log(beta)+lgamma(alpha));
   return ans;
 }
-

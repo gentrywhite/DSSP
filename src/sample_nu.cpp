@@ -14,7 +14,7 @@ using namespace Rcpp;
 //   http://gallery.rcpp.org/
 //
 
-// [[Rcpp::export]]
+// [[Rcpp::export(.sample_nu_cpp)]]
 
 arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
 {

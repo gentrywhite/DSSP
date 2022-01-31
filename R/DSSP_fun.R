@@ -163,7 +163,7 @@ make.Q<-function(y,V)
 #'sample.eta(100,ND,EV,Q,UL=1000,f)
 sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 {
-  RES<-rust::ru(function(x) eta_post_cpp(x,list(ND=ND,EV=EV,Q=Q))+log_prior(x),n=N,d=1,init=1,trans="BC",upper = UL)
+  RES<-rust::ru(function(x) .eta_post_cpp(x,list(ND=ND,EV=EV,Q=Q))+log_prior(x),n=N,d=1,init=1,trans="BC",upper = UL)
   return(RES$sim_vals)
 }
 
@@ -173,7 +173,7 @@ sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 #'This function samples from the log-posterior density of the variance parameter from the likelihood
 #'@param eta samples of the smoothing parameter from the sample.eta function.
 #'@param ND the rank of the precision matrix, the default value is n-3 for spatial data.
-#'@param EV eigenvalues of the precision matrix spatial prior from the function make.m().
+#'@param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #'@param Q the data vector from the make.Q function.
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta.
@@ -225,7 +225,7 @@ sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 
 sample.delta<-function(eta,ND,EV,Q,pars)
 {
-  sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
+  .sample_delta_cpp(eta,list(ND=ND,EV=EV,Q=Q,PARS=pars))
 }
 
 
@@ -288,7 +288,7 @@ sample.delta<-function(eta,ND,EV,Q,pars)
 
 sample.nu<-function(Y,eta,delta,EV,V)
 {
-  t(sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V)))
+  t(.sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V)))
 }
 
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
@@ -303,13 +303,11 @@ sample.nu<-function(Y,eta,delta,EV,V)
 #'@param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu
 #'@param x a matrix of spatial coordinates
 #'@param y vector of obsered data
-#'@param V eigenvectors of the precision matrix spatial prior from the function make.M()
+#'@param log_prior a function evaluating the log of ther prior density of eta    
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta, the variance parameter for the
 #'    Gaussian likelihood.
-#'@param log_prior a function evaluating the log of ther prior density of eta    
 #'@param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
-#'@keywords spatial prior, thin-plate splines
 #'@keywords spatial prior, thin-plate splines
 #'@return A list containing N samples of nu, eta, delta, and the original data X and Y.
 #'@details

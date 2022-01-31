@@ -13,7 +13,7 @@ using namespace Rcpp;
 //   http://adv-r.had.co.nz/Rcpp.html
 //   http://gallery.rcpp.org/
 //
-// [[Rcpp::export]]
+// [[Rcpp::export(.make_M)]]
 Rcpp::List make_M(const Rcpp::NumericMatrix& x)
 {
   // Read in the data
