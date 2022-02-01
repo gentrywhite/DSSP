@@ -71,22 +71,12 @@ List sample_y_pred_cpp(const Rcpp::List& pars)
   arma::mat MU_pred =  MU2+S21*S11*RES;
   arma::mat M_id = arma::mat(m,m,arma::fill::ones);
   arma::mat S_pred = delta[i]*M_id+S22+S21*S11*S12;
-
-  arma::mat SAMPLES = trans(S_pred*MU_pred);
   
+  int ncols = S_pred.n_cols;
+  arma::mat y_pred = arma::randn(1, ncols);
+  arma::mat SAMPLES = MU_pred.t() + y_pred * arma::chol(S_pred);
   
   List ret;
-  ret["S"] = S;
-  ret["S_inv"] = S_inv;
-  ret["MU"] = MU;
-  ret["SIGMA"] = SIGMA;
-  ret["MU1"] = MU1;
-  ret["MU2"] = MU2;
-  ret["S11"] = S11;
-  ret["S12"] = S12;
-  ret["S21"] = S21;
-  ret["S22"] = S22;
-  ret["RES"] = RES;
   ret["MU_pred"] = MU_pred;
   ret["S_pred"] = S_pred;
   ret["SAMPLES"] = SAMPLES;

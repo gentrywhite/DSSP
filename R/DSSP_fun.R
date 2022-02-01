@@ -530,11 +530,7 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
     # S.pred<-delta[i]*diag(1,m)+S22+S21%*%S11%*%S12
     
     ##  Sample y.pred
-    # l$SAMPLES
-    # TODO currently the code that creates SAMPLES from the cpp function doesn't have the same performance as rmvn
-    # MU_pred and S_pred work to get the same results when used in rmvn, though
-    # comment out the code below and return l$SAMPLES when running test() to see the difference
-    mvnfast::rmvn(1,mu=l$MU_pred,sigma=l$S_pred)
+    l$SAMPLES
   }
   ##  Sample y.pred for all eta,delta,nu
   y.pred<-sapply(1:N,sample.y.pred)
