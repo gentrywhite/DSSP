@@ -288,7 +288,7 @@ sample.delta<-function(eta,ND,EV,Q,pars)
 
 sample.nu<-function(Y,eta,delta,EV,V)
 {
-  t(.sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V)))
+  .sample_nu_cpp(Y,list(eta=eta,delta=delta,EV=EV,V=V))
 }
 
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior

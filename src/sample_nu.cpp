@@ -49,6 +49,6 @@ arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
     SAMPLES.row(i) = trans(V*R);
 
   }
-  return SAMPLES;
+  return SAMPLES.t();
 }
 
