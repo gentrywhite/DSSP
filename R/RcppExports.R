@@ -17,3 +17,7 @@
     .Call(`_DSSP_sample_nu_cpp`, x, pars)
 }
 
+.sample_y_pred_cpp <- function(pars) {
+    .Call(`_DSSP_sample_y_pred_cpp`, pars)
+}
+

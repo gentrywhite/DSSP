@@ -58,12 +58,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sample_y_pred_cpp
+List sample_y_pred_cpp(const Rcpp::List& pars);
+RcppExport SEXP _DSSP_sample_y_pred_cpp(SEXP parsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type pars(parsSEXP);
+    rcpp_result_gen = Rcpp::wrap(sample_y_pred_cpp(pars));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_DSSP_eta_post_cpp", (DL_FUNC) &_DSSP_eta_post_cpp, 2},
     {"_DSSP_make_M", (DL_FUNC) &_DSSP_make_M, 1},
     {"_DSSP_sample_delta_cpp", (DL_FUNC) &_DSSP_sample_delta_cpp, 2},
     {"_DSSP_sample_nu_cpp", (DL_FUNC) &_DSSP_sample_nu_cpp, 2},
+    {"_DSSP_sample_y_pred_cpp", (DL_FUNC) &_DSSP_sample_y_pred_cpp, 1},
     {NULL, NULL, 0}
 };
 
