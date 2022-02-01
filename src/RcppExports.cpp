@@ -59,7 +59,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // sample_y_pred_cpp
-List sample_y_pred_cpp(const Rcpp::List& pars);
+arma::mat sample_y_pred_cpp(const Rcpp::List& pars);
 RcppExport SEXP _DSSP_sample_y_pred_cpp(SEXP parsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

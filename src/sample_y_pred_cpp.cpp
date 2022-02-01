@@ -10,34 +10,12 @@ using namespace Rcpp;
 //   http://www.rcpp.org/
 //   http://adv-r.had.co.nz/Rcpp.html
 //   http://gallery.rcpp.org/
-/*
- * Need to incorporate the prior somehow, if possible to call as an external function,
- * or hard code as a Pareto prior when using Rcpp.
- *
- * Also need to include the IC bit as a parameter
- *
- * after sourcing this type: >ptr_name<-create_xptr("eta_post_cpp")
- *
- * then you can sample using
- *
- * rust::ru_rcpp(ptr_name,d = n = , etc.)
- *
- * experiments show that this is about 40-50 times faster.
- *
- */
 //
 // [[Rcpp::export(.sample_y_pred_cpp)]]
-List sample_y_pred_cpp(const Rcpp::List& pars)
+arma::mat sample_y_pred_cpp(const Rcpp::List& pars)
 {
-  // Read in the data
-  // double N = as<double>(pars["N"]);
-  // double eta = as<double>(pars["eta"]); // this will be a vector that's looped through later
-  // int N = eta.size(); // for when we include the loop within this function...
-  // arma::vec lambda_diag(N, arma::fill::zeros); // " " 
-  
-  // int i = 0;
-  int i = as<int>(pars["i"]);
   int n = as<int>(pars["n"]);
+  int N = as<int>(pars["N"]);
   int m = as<int>(pars["m"]);
   arma::colvec eta = Rcpp::as<arma::colvec>(pars["eta"]);
   arma::colvec delta = Rcpp::as<arma::colvec>(pars["delta"]);
@@ -45,41 +23,41 @@ List sample_y_pred_cpp(const Rcpp::List& pars)
   arma::colvec Y = Rcpp::as<arma::colvec>(pars["Y"]);
   arma::mat v = Rcpp::as<arma::mat>(pars["v"]);
   arma::mat nu = Rcpp::as<arma::mat>(pars["nu"]);
-  
   arma::mat VT = v.t();
-  arma::mat S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
-  arma::mat S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
-  arma::mat MU = S*Y;
-  
-  
-  // ##  Compute Sigma
-  arma::mat SIGMA = delta[i]*S ;
-  
-  // ##  Partition MU and SIGMA
-  arma::mat MU1 = MU.rows(0, n-1);
-  arma::mat MU2 = MU.rows(n, n+m-1);
-  
-  arma::mat S11 = delta[i]*S_inv.submat(0,0,n-1,n-1);
-  arma::mat S12 = SIGMA.submat(0,n,n-1,n+m-1);
-  arma::mat S21 = SIGMA.submat(n,0,n+m-1,n-1);
-  arma::mat S22 = SIGMA.submat(n,n,n+m-1,n+m-1);
+  arma::mat y = arma::randn(N, m);
+  arma::mat samples = arma::randn(N, m);
 
-  // ##  Compute Residuals
-  arma::mat RES = nu.submat(0, i, n-1, i) - MU1;
+  for(int i=0; i<N; ++i)
+  {
+    // Compute S
+    arma::mat S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
+    arma::mat S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
+    
+    // Compute MU
+    arma::mat MU = S*Y;
 
-  // ##  Compute mu.pred and sigma.pred for y.pred
-  arma::mat MU_pred =  MU2+S21*S11*RES;
-  arma::mat M_id = arma::mat(m,m,arma::fill::ones);
-  arma::mat S_pred = delta[i]*M_id+S22+S21*S11*S12;
-  
-  int ncols = S_pred.n_cols;
-  arma::mat y_pred = arma::randn(1, ncols);
-  arma::mat SAMPLES = MU_pred.t() + y_pred * arma::chol(S_pred);
-  
-  List ret;
-  ret["MU_pred"] = MU_pred;
-  ret["S_pred"] = S_pred;
-  ret["SAMPLES"] = SAMPLES;
-  return ret;
+    // Compute Sigma
+    arma::mat SIGMA = delta[i]*S ;
 
+    // Partition MU and SIGMA
+    arma::mat MU1 = MU.rows(0, n-1);
+    arma::mat MU2 = MU.rows(n, n+m-1);
+
+    arma::mat S11 = delta[i]*S_inv.submat(0,0,n-1,n-1);
+    arma::mat S12 = SIGMA.submat(0,n,n-1,n+m-1);
+    arma::mat S21 = SIGMA.submat(n,0,n+m-1,n-1);
+    arma::mat S22 = SIGMA.submat(n,n,n+m-1,n+m-1);
+
+    // Compute Residuals
+    arma::mat RES = nu.submat(0, i, n-1, i) - MU1;
+
+    // Compute mu_pred and sigma_pred for y_pred
+    arma::mat MU_pred =  MU2+S21*S11*RES;
+    arma::mat M_id = arma::mat(m,m,arma::fill::ones);
+    arma::mat S_pred = delta[i]*M_id+S22+S21*S11*S12;
+
+    samples.row(i) = MU_pred.t() + y.row(i) * arma::chol(S_pred);
+  }
+  
+  return samples.t();
 }
