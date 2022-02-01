@@ -41,14 +41,14 @@ List sample_y_pred_cpp(const Rcpp::List& pars)
   int m = as<int>(pars["m"]);
   arma::colvec eta = Rcpp::as<arma::colvec>(pars["eta"]);
   arma::colvec delta = Rcpp::as<arma::colvec>(pars["delta"]);
-  arma::colvec EV = Rcpp::as<arma::colvec>(pars["EV"]);
+  arma::colvec ev = Rcpp::as<arma::colvec>(pars["ev"]);
   arma::colvec Y = Rcpp::as<arma::colvec>(pars["Y"]);
-  arma::mat V = Rcpp::as<arma::mat>(pars["V"]);
+  arma::mat v = Rcpp::as<arma::mat>(pars["v"]);
   arma::mat nu = Rcpp::as<arma::mat>(pars["nu"]);
   
-  arma::mat VT = V.t();
-  arma::mat S = V*arma::diagmat(1/(1+eta[i]*EV))*VT;
-  arma::mat S_inv = V*arma::diagmat(1+eta[i]*EV)*VT;
+  arma::mat VT = v.t();
+  arma::mat S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
+  arma::mat S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
   arma::mat MU = S*Y;
   
   
@@ -71,8 +71,7 @@ List sample_y_pred_cpp(const Rcpp::List& pars)
   arma::mat MU_pred =  MU2+S21*S11*RES;
   arma::mat M_id = arma::mat(m,m,arma::fill::ones);
   arma::mat S_pred = delta[i]*M_id+S22+S21*S11*S12;
-//       MU.pred<-MU2+S21%*%S11%*%RES
-//         S.pred<-delta[i]*diag(1,m)+S22+S21%*%S11%*%S12
+
   arma::mat SAMPLES = trans(S_pred*MU_pred);
   
   

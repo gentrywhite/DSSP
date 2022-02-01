@@ -488,50 +488,53 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
   
   ##  Write function for pi(y.pred|y,eta,delta,nu)
   sample.y.pred<-function(i){
-    l <- .sample_y_pred_cpp(list(N=N,eta=eta,EV=EV,V=V,Y=Y,delta=delta,i=i-1,n=n,m=m,nu=nu))
+    l <- .sample_y_pred_cpp(list(N=N,eta=eta,ev=ev,v=v,Y=Y,delta=delta,i=i-1,n=n,m=m,nu=nu))
     ##  Compute S
     # lambda<-1/(1+eta[i]*ev)
     # S<-v%*%diag(lambda)%*%t(v)
     # S.inv<-v%*%diag((1+eta[i]*ev))%*%t(v)
-    S <- l$S
-    S.inv <- l$S_inv 
+    # S <- l$S
+    # S.inv <- l$S_inv 
     
     ##  Compute MU
     # MU<-S%*%Y
-    MU <- l$MU
+    # MU <- l$MU
     
     ##  Compute Sigma
     # SIGMA<-delta[i]*S
-    SIGMA<-l$SIGMA
+    # SIGMA<-l$SIGMA
     
     ##  Partition MU and SIGMA
     # MU1<-MU[1:n]
     # MU2<-MU[(n+1):(n+m)]
-    MU1<-l$MU1
-    MU2<-l$MU2
+    # MU1<-l$MU1
+    # MU2<-l$MU2
     
     # S11<-delta[i]*S.inv[1:n,1:n]
     # S12<-SIGMA[1:n,(n+1):(n+m)]
     # S21<-SIGMA[(n+1):(n+m),1:n]
     # S22<-SIGMA[(n+1):(n+m),(n+1):(n+m)]
-    S11<-l$S11
-    S12<-l$S12
-    S21<-l$S21
-    S22<-l$S22
+    # S11<-l$S11
+    # S12<-l$S12
+    # S21<-l$S21
+    # S22<-l$S22
     
     ##  Compute Residuals
     # RES<-nu[1:n,i]-MU1
-    RES<-l$RES
+    # RES<-l$RES
     
     ##  Compute mu.pred and sigma.pred for y.pred
-    MU.pred<-l$MU_pred
-    S.pred<-l$S_pred
+    # MU.pred<-l$MU_pred
+    # S.pred<-l$S_pred
     # MU.pred<-MU2+S21%*%S11%*%RES
     # S.pred<-delta[i]*diag(1,m)+S22+S21%*%S11%*%S12
     
     ##  Sample y.pred
     # l$SAMPLES
-    mvnfast::rmvn(1,mu=MU.pred,sigma=S.pred)
+    # TODO currently the code that creates SAMPLES from the cpp function doesn't have the same performance as rmvn
+    # MU_pred and S_pred work to get the same results when used in rmvn, though
+    # comment out the code below and return l$SAMPLES when running test() to see the difference
+    mvnfast::rmvn(1,mu=l$MU_pred,sigma=l$S_pred)
   }
   ##  Sample y.pred for all eta,delta,nu
   y.pred<-sapply(1:N,sample.y.pred)
