@@ -486,6 +486,11 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
   ##  Extract Values
   ev<-M.list$M.eigen$values
   
+  # lambda<-1/(1+eta[1]*ev)
+  # S<-v%*%diag(lambda)%*%t(v)
+  # print(length(eta))
+  # print(length(ev))
+  # print(dim(S))
   y.pred <- .sample_y_pred_cpp(list(N=N,eta=eta,ev=ev,v=v,Y=Y,delta=delta,n=n,m=m,nu=nu))
   return(y.pred)
 }
