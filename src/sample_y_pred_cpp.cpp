@@ -26,6 +26,19 @@ arma::mat sample_y_pred_cpp(const Rcpp::List& pars)
   arma::mat VT = v.t();
   arma::mat samples = arma::randn(N, m);
   arma::mat S = arma::mat(ev.size(), ev.size(), arma::fill::ones);
+  arma::mat S_inv = arma::mat(ev.size(), ev.size(), arma::fill::ones);
+  arma::mat MU = arma::mat(ev.size(), 1, arma::fill::ones);
+  arma::mat SIGMA = arma::mat(ev.size(), ev.size(), arma::fill::ones);
+  arma::mat MU1 = arma::mat(n, 1, arma::fill::ones);
+  arma::mat MU2 = arma::mat(m, 1, arma::fill::ones);
+  arma::mat S11 = arma::mat(n, n, arma::fill::ones);
+  arma::mat S12 = arma::mat(n, m, arma::fill::ones);
+  arma::mat S21 = arma::mat(m, n, arma::fill::ones);
+  arma::mat S22 = arma::mat(m, m, arma::fill::ones);
+  arma::mat RES = arma::mat(n, 1, arma::fill::ones);
+  arma::mat M_id = arma::mat(m,m,arma::fill::ones);
+  arma::mat MU_pred = arma::mat(m, 1, arma::fill::ones);
+  arma::mat S_pred = arma::mat(m, m, arma::fill::ones);
 
   for(int i=0; i<N; ++i)
   {
@@ -34,30 +47,29 @@ arma::mat sample_y_pred_cpp(const Rcpp::List& pars)
     // Compute S
     // arma::mat S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
     S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
-    arma::mat S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
+    S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
     
     // Compute MU
-    arma::mat MU = S*Y;
+    MU = S*Y;
 
     // Compute Sigma
-    arma::mat SIGMA = delta[i]*S ;
+    SIGMA = delta[i]*S ;
 
     // Partition MU and SIGMA
-    arma::mat MU1 = MU.rows(0, n-1);
-    arma::mat MU2 = MU.rows(n, n+m-1);
+    MU1 = MU.rows(0, n-1);
+    MU2 = MU.rows(n, n+m-1);
 
-    arma::mat S11 = delta[i]*S_inv.submat(0,0,n-1,n-1);
-    arma::mat S12 = SIGMA.submat(0,n,n-1,n+m-1);
-    arma::mat S21 = SIGMA.submat(n,0,n+m-1,n-1);
-    arma::mat S22 = SIGMA.submat(n,n,n+m-1,n+m-1);
+    S11 = delta[i]*S_inv.submat(0,0,n-1,n-1);
+    S12 = SIGMA.submat(0,n,n-1,n+m-1);
+    S21 = SIGMA.submat(n,0,n+m-1,n-1);
+    S22 = SIGMA.submat(n,n,n+m-1,n+m-1);
 
     // Compute Residuals
-    arma::mat RES = nu.submat(0, i, n-1, i) - MU1;
+    RES = nu.submat(0, i, n-1, i) - MU1;
 
     // Compute mu_pred and sigma_pred for y_pred
-    arma::mat MU_pred =  MU2+S21*S11*RES;
-    arma::mat M_id = arma::mat(m,m,arma::fill::ones);
-    arma::mat S_pred = delta[i]*M_id+S22+S21*S11*S12;
+    MU_pred =  MU2+S21*S11*RES;
+    S_pred = delta[i]*M_id+S22+S21*S11*S12;
 
     samples.row(i) = MU_pred.t() + samples.row(i) * arma::chol(S_pred);
   }
