@@ -52,12 +52,15 @@ The direct sampling spatial prior model assumes that the spatial model can be wr
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
+coordinates(meuse.all) <- ~ x + y
 
-f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 
 ## Draw 100 samples from the posterior of eta given the data y.
-OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all,N=100,f,pars=c(0.001,0.001),fitted.values=FALSE)
+OUTPUT <- DSSP(
+  formula = log(zinc) ~ 1, data = meuse.all, N = 100,
+  log_prior = f, pars = c(0.001, 0.001), fitted.values = FALSE
+)
 }
 \keyword{prior,}
 \keyword{spatial}

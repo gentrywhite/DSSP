@@ -26,10 +26,10 @@ This function computes the thin-plate spline radial basis function depending on 
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-D<-as.matrix(dist(X))
-K<-tps.rbf(D,TRUE)
+coordinates(meuse.all) <- ~ x + y
+X <- scale(coordinates(meuse.all))
+D <- as.matrix(dist(X))
+K <- tps.rbf(D, TRUE)
 }
 \keyword{basis}
 \keyword{function}

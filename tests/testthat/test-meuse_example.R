@@ -2,41 +2,42 @@ data("meuse.all", package = "gstat")
 
 test_that("fitting model with coords specified work", {
   m <- DSSP(
-    formula=log(zinc)~1, data=meuse.all,N=1000, function(x) -2*log(1+x),
-    fitted.values=TRUE,pars=c(0.001,0.001),coords=~x+y)
-  expect_true(class(m)=="list")
+    formula = log(zinc) ~ 1, data = meuse.all, N = 1000, function(x) -2 * log(1 + x),
+    fitted.values = TRUE, pars = c(0.001, 0.001), coords = ~ x + y
+  )
+  expect_true(class(m) == "list")
 })
 
-sp::coordinates(meuse.all) = ~x+y
-N<-1000
+sp::coordinates(meuse.all) <- ~ x + y
+N <- 1000
 
 
 test_that("fitting model work", {
-  meuse.fit<<-DSSP(
-    formula=log(zinc)~1, data=meuse.all[1:155,],N=N, function(x) -2*log(1+x),
-    fitted.values=TRUE,pars=c(0.001,0.001)
+  meuse.fit <<- DSSP(
+    formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = N, function(x) -2 * log(1 + x),
+    fitted.values = TRUE, pars = c(0.001, 0.001)
   )
-  ETA<<-meuse.fit$eta
+  ETA <<- meuse.fit$eta
   expect_true(is.numeric(ETA))
-  DELTA<<-meuse.fit$delta
+  DELTA <<- meuse.fit$delta
   expect_true(is.numeric(DELTA))
-  NU<<-meuse.fit$nu
+  NU <<- meuse.fit$nu
   expect_true(is.numeric(NU))
 })
 
 test_that("fitted values are good", {
-  Yhat<-rowMeans(exp(NU*meuse.fit$y_scaling$scale+meuse.fit$y_scaling$center))
-  Ytrue<-meuse.all$zinc[1:155]
-  mse<-mean((Ytrue - Yhat)^2)
+  Yhat <- rowMeans(exp(NU * meuse.fit$y_scaling$scale + meuse.fit$y_scaling$center))
+  Ytrue <- meuse.all$zinc[1:155]
+  mse <- mean((Ytrue - Yhat)^2)
   expect_true(mse < 40000)
   expect_true(cor(Ytrue, Yhat) > 0.8)
 })
 
 test_that("predictions are good", {
-  Y.pred<-DSSP.predict(meuse.fit,meuse.all[156:164,])
-  Y.pred<-exp(Y.pred)
-  Y.pred<-rowMeans(Y.pred)
-  Y.true<-meuse.all$zinc[156:164]
+  Y.pred <- DSSP.predict(meuse.fit, meuse.all[156:164, ])
+  Y.pred <- exp(Y.pred)
+  Y.pred <- rowMeans(Y.pred)
+  Y.true <- meuse.all$zinc[156:164]
   expect_true(mean((Y.true - Y.pred)^2) < 20000)
   expect_true(cor(Y.pred, Y.true) > 0.8)
 })

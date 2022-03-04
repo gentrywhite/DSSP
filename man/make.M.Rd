@@ -28,8 +28,8 @@ The M matrix is the precision matrix for the
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
+coordinates(meuse.all) <- ~ x + y
+X <- scale(coordinates(meuse.all))
 make.M(X)
 }
 \keyword{prior,}

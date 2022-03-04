@@ -34,23 +34,23 @@ This function samples from the log-posterior density of the smoothing parameter 
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-tmp<-make.M(X)
+coordinates(meuse.all) <- ~ x + y
+X <- scale(coordinates(meuse.all))
+tmp <- make.M(X)
 
-EV<-tmp$M.eigen$values
-V<-tmp$M.eigen$vectors
+EV <- tmp$M.eigen$values
+V <- tmp$M.eigen$vectors
 
-M<-tmp$M
+M <- tmp$M
 
-Y<-scale(log(meuse.all$zinc))
-Q<-make.Q(Y,V)
+Y <- scale(log(meuse.all$zinc))
+Q <- make.Q(Y, V)
 
-ND<-nrow(X)-3
-f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+ND <- nrow(X) - 3
+f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 
 ## Draw 100 samples from the posterior of eta given the data y.
-sample.eta(100,ND,EV,Q,UL=1000,f)
+sample.eta(100, ND, EV, Q, UL = 1000, f)
 }
 \keyword{prior,}
 \keyword{spatial}

@@ -30,26 +30,42 @@ This function samples from the log-posterior density of the variance parameter f
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-tmp<-make.M(X)
+coordinates(meuse.all) <- ~ x + y
+X <- scale(coordinates(meuse.all))
+tmp <- make.M(X)
 
-M<-tmp$M
+M <- tmp$M
 
-Y<-scale(log(meuse.all$zinc))
+Y <- scale(log(meuse.all$zinc))
 
-ND<-nrow(X)-3
-M.list<-make.M(X) ##  Only Needs to return the eigenvalues and vectors
-M<-M.list$M
-EV<-M.list$M.eigen$values
-V<-M.list$M.eigen$vectors
-Q<-make.Q(Y,V)
+ND <- nrow(X) - 3
+M.list <- make.M(X) ##  Only Needs to return the eigenvalues and vectors
+M <- M.list$M
+EV <- M.list$M.eigen$values
+V <- M.list$M.eigen$vectors
+Q <- make.Q(Y, V)
 
-f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 ## Draw 100 samples from the posterior of eta given the data y.
 
-ETA<-sample.eta(100,ND,EV,Q,f,UL=1000)
-DELTA<-sample.delta(ETA,ND,EV,Q,pars=c(0.001,0.001))
+ETA <- sample.eta(100, ND, EV, Q, f, UL = 1000)
+DELTA <- sample.delta(ETA, ND, EV, Q, pars = c(0.001, 0.001))
+##  Old Slow Version of sample.nu()
+## sample.delta<-function(eta,nd,ev,Q,pars)
+## {
+##   N<-length(eta)
+##   f.beta<-function(x)
+##   {
+##     lambda<-1/(1+x*ev)
+##     b<-tcrossprod(Q,diag(1-lambda))
+##     beta<-0.5*tcrossprod(Q,b)+pars[2]
+##     return(beta)
+##   }
+##   alpha<-pars[1]+nd*0.5
+##   beta<-sapply(eta,f.beta)
+##   delta<-1/rgamma(N,shape=alpha,rate=beta)
+##   return(delta)
+## }
 }
 \keyword{prior,}
 \keyword{spatial}

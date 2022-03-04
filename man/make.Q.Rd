@@ -20,20 +20,20 @@ This function creates the the data vector for evaluating the joint posterior dis
    the direct sampling spatial prior (DSSP) model.
 }
 \examples{
-#'## Use the Meuse River dataset from the package 'gstat'
+#' ## Use the Meuse River dataset from the package 'gstat'
 
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-tmp<-make.M(X)
+coordinates(meuse.all) <- ~ x + y
+X <- scale(coordinates(meuse.all))
+tmp <- make.M(X)
 
-EV<-tmp$M.eigen$values
-V<-tmp$M.eigen$vectors
+EV <- tmp$M.eigen$values
+V <- tmp$M.eigen$vectors
 
-Y<-scale(log(meuse.all$zinc))
-Q<-make.Q(Y,V)
+Y <- scale(log(meuse.all$zinc))
+Q <- make.Q(Y, V)
 }
 \keyword{prior,}
 \keyword{spatial}

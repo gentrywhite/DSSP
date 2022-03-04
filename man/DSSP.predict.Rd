@@ -23,19 +23,21 @@ A matrix with N columns containing N values from the posterior predictive distri
 This function samples from the log-posterior of all parameters in the model
 }
 \examples{
-#'## Use the Meuse River dataset from the package 'gstat'
+#' ## Use the Meuse River dataset from the package 'gstat'
 
 library(sp)
 library(gstat)
 data(meuse.all)
-coordinates(meuse.all)<-~x+y
+coordinates(meuse.all) <- ~ x + y
 
-f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 
 ## Draw 100 samples from the posterior of eta given the data y.
-OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all[1:155,],N=100,f,pars=c(0.001,0.001))
-
-Y.PRED<-DSSP.predict(OUTPUT,meuse.all[156:164,])
+OUTPUT <- DSSP(
+  formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 100,
+  log_prior = f, pars = c(0.001, 0.001)
+)
+Y.PRED <- DSSP.predict(OUTPUT, meuse.all[156:164, ])
 }
 \keyword{prior,}
 \keyword{spatial}

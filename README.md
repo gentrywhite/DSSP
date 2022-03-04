@@ -31,10 +31,10 @@ Short example using the Meuse dataset from the `{gstat}` package.
 
 ``` r
 data("meuse.all", package = "gstat")
-meuse.train <- meuse.all[1:155,]
+meuse.train <- meuse.all[1:155, ]
 meuse.valid <- meuse.all[156:164, c("x", "y")]
-sp::coordinates(meuse.train) = ~x+y
-sp::coordinates(meuse.valid) = ~x+y
+sp::coordinates(meuse.train) <- ~ x + y
+sp::coordinates(meuse.valid) <- ~ x + y
 ```
 
 This model does not include any covariates.
@@ -42,7 +42,7 @@ This model does not include any covariates.
 ``` r
 library(DSSP)
 meuse.fit <- DSSP(
-  formula=log(zinc)~1, data=meuse.train, N = 10000, 
+  formula = log(zinc) ~ 1, data = meuse.train, N = 10000,
   log_prior = function(x) -2 * log(1 + x), pars = c(0.001, 0.001),
   fitted.values = TRUE
 )
