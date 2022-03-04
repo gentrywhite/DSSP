@@ -158,8 +158,8 @@ make.Q<-function(y,V)
 #'
 #'ND<-nrow(X)-3
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
-#'## Draw 100 samples from the posterior of eta given the data y.
 #'
+#'## Draw 100 samples from the posterior of eta given the data y.
 #'sample.eta(100,ND,EV,Q,UL=1000,f)
 sample.eta<-function(N,ND,EV,Q,UL=1000,log_prior)
 {
@@ -333,7 +333,6 @@ sample.nu<-function(Y,eta,delta,EV,V)
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
-#'
 #'OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all,N=100,f,pars=c(0.001,0.001),fitted.values=FALSE)
 
 DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
@@ -425,7 +424,8 @@ DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
   
   out <- list(eta=eta,delta=delta)
   if(fitted.values){
-    out <- append(out, list(nu=sample.nu(Y,eta,delta,EV,V)))
+    nu <- sample.nu(Y,eta,delta,EV,V)
+    out <- append(out,list(nu=nu, y_fitted=nu*y_scaling$scale+y_scaling$center))
   }
   
   append(out, list(X=X,Y=Y,y_scaling=y_scaling,coord_scaling=coord_scaling,
@@ -462,10 +462,8 @@ DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
-#'
 #'OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all[1:155,],N=100,f,pars=c(0.001,0.001))
 #'
-#'##Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
 #'Y.PRED<-DSSP.predict(OUTPUT,meuse.all[156:164,])
 
 DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate samples
@@ -479,7 +477,7 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
   
   #  Extract components from dssp.model
   
-  if(class(x.pred)!="SpatialPointsDataFrame"){
+  if(!any(class(x.pred) %in% c("SpatialPointsDataFrame", "SpatialPoints"))){
     sp::coordinates(x.pred) = dssp.model$coords
   }
   w.pred <- sp::coordinates(x.pred)

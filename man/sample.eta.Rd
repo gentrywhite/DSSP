@@ -48,8 +48,8 @@ Q<-make.Q(Y,V)
 
 ND<-nrow(X)-3
 f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
-## Draw 100 samples from the posterior of eta given the data y.
 
+## Draw 100 samples from the posterior of eta given the data y.
 sample.eta(100,ND,EV,Q,UL=1000,f)
 }
 \keyword{prior,}
