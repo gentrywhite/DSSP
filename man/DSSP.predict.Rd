@@ -4,17 +4,12 @@
 \alias{DSSP.predict}
 \title{Function to generate samples from the posterior predictive distribution of y for new locations x.new}
 \usage{
-DSSP.predict(dssp.model, x.pred, ncores = 1)
+DSSP.predict(dssp.model, x.pred)
 }
 \arguments{
 \item{dssp.model}{the model output from \code{DSSP()}.}
 
 \item{x.pred}{a matrix of spatial coordinates to predict new values of y.}
-
-\item{ncores}{number of cores to use when sampling from the posterior predictive distribution,
-defaults to 1. This is an optional argument to pass to rmvn() from the mvnfast package
-It requires that the user's system has OpenMP installed and packages are set to build with
-OpenMp enabled.  Please see the documentation for the mvnfast package for further details.}
 }
 \value{
 A matrix with N columns containing N values from the posterior predictive distribution.

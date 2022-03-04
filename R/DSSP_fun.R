@@ -395,10 +395,6 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 #' This function samples from the log-posterior of all parameters in the model
 #' @param dssp.model the model output from \code{DSSP()}.
 #' @param x.pred a matrix of spatial coordinates to predict new values of y.
-#' @param ncores number of cores to use when sampling from the posterior predictive distribution,
-#'    defaults to 1. This is an optional argument to pass to rmvn() from the mvnfast package
-#'    It requires that the user's system has OpenMP installed and packages are set to build with
-#'    OpenMp enabled.  Please see the documentation for the mvnfast package for further details.
 #' @keywords spatial prior, thin-plate splines
 #' @return A matrix with N columns containing N values from the posterior predictive distribution.
 #' @export
@@ -418,8 +414,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 #'   pars = c(0.001, 0.001), log_prior = f
 #' )
 #' Y.PRED <- DSSP.predict(OUTPUT, meuse.all[156:164, ])
-DSSP.predict <- function(dssp.model, x.pred, ncores = 1) { ##  function to generate samples
-  ## TODO ncores is probably unecessary for this function now with cpp version of smaple.nu()?
+DSSP.predict <- function(dssp.model, x.pred) { ##  function to generate samples
   ##  Needs the conditional predictive for y_pred and the output of eta, delta, and nu
   ##  Needs to be able to sample from posterior predicitive of nu_pred as well
   ##  First draw nu_pred then use that to draw y_pred from likelihood
