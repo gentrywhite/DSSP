@@ -35,7 +35,7 @@ f <- function(x) -x ## log-prior for exponential distribution for the smoothing 
 ## Draw 100 samples from the posterior of eta given the data y.
 OUTPUT <- DSSP(
   formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 100,
-  log_prior = f, pars = c(0.001, 0.001)
+  pars = c(0.001, 0.001), log_prior = f
 )
 Y.PRED <- DSSP.predict(OUTPUT, meuse.all[156:164, ])
 }

@@ -49,7 +49,7 @@ This model does not include any covariates.
 library(DSSP)
 meuse.fit <- DSSP(
   formula = log(zinc) ~ 1, data = meuse.train, N = 10000,
-  log_prior = function(x) -2 * log(1 + x), pars = c(0.001, 0.001),
+  pars = c(0.001, 0.001), log_prior = function(x) -2 * log(1 + x),
   fitted.values = TRUE
 )
 ```

@@ -4,7 +4,15 @@
 \alias{DSSP}
 \title{DSSP}
 \usage{
-DSSP(formula, data, N, log_prior, pars, fitted.values = FALSE, coords = NULL)
+DSSP(
+  formula,
+  data,
+  N,
+  pars,
+  log_prior = function(x) -x,
+  fitted.values = FALSE,
+  coords = NULL
+)
 }
 \arguments{
 \item{formula}{a two sided linear formula with the response on left and the covariates on the right}
@@ -13,11 +21,11 @@ DSSP(formula, data, N, log_prior, pars, fitted.values = FALSE, coords = NULL)
 
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu}
 
-\item{log_prior}{a function evaluating the log of ther prior density of eta}
-
 \item{pars}{a vector of the prior shape and rate parameters for the
 inverse-gamma prior distribution of delta, the variance parameter for the
 Gaussian likelihood.}
+
+\item{log_prior}{a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.}
 
 \item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
 
@@ -59,7 +67,7 @@ f <- function(x) -x ## log-prior for exponential distribution for the smoothing 
 ## Draw 100 samples from the posterior of eta given the data y.
 OUTPUT <- DSSP(
   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
-  log_prior = f, pars = c(0.001, 0.001), fitted.values = FALSE
+  pars = c(0.001, 0.001), log_prior = f, fitted.values = FALSE
 )
 }
 \keyword{prior,}

@@ -95,7 +95,7 @@ make.M <- function(X) {
 #'  from the  joint posterior distribution.
 #' @export
 #' @examples
-#' #' ## Use the Meuse River dataset from the package 'gstat'
+#' ## Use the Meuse River dataset from the package 'gstat'
 #'
 #' library(sp)
 #' library(gstat)
@@ -269,10 +269,10 @@ sample.nu <- function(Y, eta, delta, EV, V) {
 #' @param formula a two sided linear formula with the response on left and the covariates on the right
 #' @param data a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.
 #' @param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu
-#' @param log_prior a function evaluating the log of ther prior density of eta
 #' @param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta, the variance parameter for the
 #'    Gaussian likelihood.
+#' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
 #' @param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
 #' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}
 #' @keywords spatial prior, thin-plate splines
@@ -301,9 +301,11 @@ sample.nu <- function(Y, eta, delta, EV, V) {
 #' ## Draw 100 samples from the posterior of eta given the data y.
 #' OUTPUT <- DSSP(
 #'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
-#'   log_prior = f, pars = c(0.001, 0.001), fitted.values = FALSE
+#'   pars = c(0.001, 0.001), log_prior = f, fitted.values = FALSE
 #' )
-DSSP <- function(formula, data, N, log_prior, pars, fitted.values = FALSE, coords = NULL) {
+DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values = FALSE, coords = NULL) {
+  stopifnot(is.function(log_prior))
+  
   if (all(class(data) != "SpatialPointsDataFrame")) {
     sp::coordinates(data) <- coords
   } else {
@@ -350,28 +352,14 @@ DSSP <- function(formula, data, N, log_prior, pars, fitted.values = FALSE, coord
   delta <- numeric(length = N)
   eta <- numeric(length = N)
 
-  ##  If the prior specified is not a function then use exp(1) as prior
-
-  if (is.function(log_prior) == TRUE) {
-    log_prior <- log_prior
-  } else {
-    log_prior <- function(x) -x ## default prior is exp(1)
-  }
-
-
-  ##  Declare dimentional constants
-
+  ##  Declare dimensional constants
   n <- length(Y)
-
   d <- ncol(X) + 1
-
   nd <- n - d
   ND <- n - d
 
   ##  Compute M
-
   M.list <- make.M(X) ##  Only Needs to return the eigenvalues and vectors
-
   M <- M.list$M
 
   EV <- M.list$M.eigen$values
@@ -379,11 +367,9 @@ DSSP <- function(formula, data, N, log_prior, pars, fitted.values = FALSE, coord
   Q <- make.Q(Y, V)
 
   ## sample eta
-
   eta <- sample.eta(N, ND, EV, Q, log_prior, UL = 1000)
 
   ##  sample delta_0
-
   delta <- sample.delta(eta, ND, EV, Q, pars)
 
   out <- list(eta = eta, delta = delta)
@@ -430,7 +416,7 @@ DSSP <- function(formula, data, N, log_prior, pars, fitted.values = FALSE, coord
 #' ## Draw 100 samples from the posterior of eta given the data y.
 #' OUTPUT <- DSSP(
 #'   formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 100,
-#'   log_prior = f, pars = c(0.001, 0.001)
+#'   pars = c(0.001, 0.001), log_prior = f
 #' )
 #' Y.PRED <- DSSP.predict(OUTPUT, meuse.all[156:164, ])
 DSSP.predict <- function(dssp.model, x.pred, ncores = 1) { ##  function to generate samples
