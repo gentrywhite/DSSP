@@ -338,8 +338,44 @@ sample.nu<-function(Y,eta,delta,EV,V)
 #'
 #'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE)
 
-DSSP<-function(N,x,y,log_prior,pars,fitted.values = FALSE)
+DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
 {
+  
+  if(class(data)!="SpatialPointsDataFrame"){
+    sp::coordinates(data) = coords
+  }else{
+    if(!is.null(coords)) message("obtaining spatial coordinates from data; ignoring coords provided")
+  }
+  
+  w <- sp::coordinates(data)
+  if(any(!grepl("scaled", names(attributes(w))))){
+    w <- scale(w)
+    coord_scaling <- list(
+      center=attr(w, "scaled:center"),
+      scale=attr(w, "scaled:scale")
+    )
+  }else{
+    coord_scaling <- list(center=NA, scale=NA)
+  }
+  
+  mt <- terms(formula, data=data)
+  mf <- lm(formula, data=data, method="model.frame")
+  y <- model.extract(mf, "response")
+  y <- scale(y)
+  y_scaling <- list(
+    center=attr(y, "scaled:center"),
+    scale=attr(y, "scaled:scale")
+  )
+  x <- model.matrix(mt, mf)
+  
+  if(attr(x, "assign")==0 & dim(x)[2]==1){
+    # if model is y ~ 1: x is just the coordinates and old version of DSSP can be run
+    x <- w
+  }else{
+    # use both covariates and coordinates for model fitting
+    return(message("Currently only works for intercept only models: formula=y~1"))
+  }
+  
   #  UseMethod("DSSP")
   ##  Test Inputs
   
