@@ -200,7 +200,7 @@ delta.cumsumplot
 
 
 ```{r,eval=TRUE,include=TRUE}
-Y.pred <- DSSP.predict(meuse.fit, meuse.valid)
+Y.pred <- predict(meuse.fit, meuse.valid)
 Y.pred <- exp(Y.pred)
 
 pred.data <- data.frame(Yhat.pred = rowMeans(Y.pred), Y.true = meuse.all$zinc[156:164])

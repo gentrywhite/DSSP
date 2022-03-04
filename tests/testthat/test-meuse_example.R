@@ -5,7 +5,7 @@ test_that("fitting model with coords specified work", {
     formula = log(zinc) ~ 1, data = meuse.all, N = 1000, function(x) -2 * log(1 + x),
     fitted.values = TRUE, pars = c(0.001, 0.001), coords = ~ x + y
   )
-  expect_true(class(m) == "list")
+  expect_true(class(m) == "dsspMod")
 })
 
 sp::coordinates(meuse.all) <- ~ x + y
@@ -34,7 +34,7 @@ test_that("fitted values are good", {
 })
 
 test_that("predictions are good", {
-  Y.pred <- DSSP.predict(meuse.fit, meuse.all[156:164, ])
+  Y.pred <- predict(meuse.fit, meuse.all[156:164, ])
   Y.pred <- exp(Y.pred)
   Y.pred <- rowMeans(Y.pred)
   Y.true <- meuse.all$zinc[156:164]

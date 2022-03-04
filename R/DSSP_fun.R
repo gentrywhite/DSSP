@@ -376,92 +376,61 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
     nu <- sample.nu(Y, eta, delta, EV, V)
     out <- append(out, list(nu = nu, y_fitted = nu * y_scaling$scale + y_scaling$center))
   }
-
-  append(out, list(
-    X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
-    coords = coords, intercept_only = intercept_only
-  ))
+  
+  dssp.out <- 
+    append(out, list(
+      X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
+      coords = coords, intercept_only = intercept_only
+    ))
+  class(dssp.out) <- "dsspMod"
+  dssp.out
 }
 
-# .onUnload <- function (libpath) {
-#   library.dynam.unload("DSSPcpp", libpath)
-# }
-
-##  Predict method for DSSP
-
-#' Function to generate samples from the posterior predictive distribution of y for new locations x.new
-#'
-#'
-#' This function samples from the log-posterior of all parameters in the model
-#' @param dssp.model the model output from \code{DSSP()}.
-#' @param x.pred a matrix of spatial coordinates to predict new values of y.
-#' @keywords spatial prior, thin-plate splines
-#' @return A matrix with N columns containing N values from the posterior predictive distribution.
-#' @export
-#' @examples
-#' ## Use the Meuse River dataset from the package 'gstat'
-#'
-#' library(sp)
-#' library(gstat)
-#' data(meuse.all)
-#' coordinates(meuse.all) <- ~ x + y
-#'
-#' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
-#'
-#' ## Draw 100 samples from the posterior of eta given the data y.
-#' OUTPUT <- DSSP(
-#'   formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 100,
-#'   pars = c(0.001, 0.001), log_prior = f
-#' )
-#' Y.PRED <- DSSP.predict(OUTPUT, meuse.all[156:164, ])
-DSSP.predict <- function(dssp.model, x.pred) { ##  function to generate samples
-  ##  Needs the conditional predictive for y_pred and the output of eta, delta, and nu
-  ##  Needs to be able to sample from posterior predicitive of nu_pred as well
-  ##  First draw nu_pred then use that to draw y_pred from likelihood
-
-  ##  Fix this so that  if nu is missing it is
-  ##  computed first then the predict scheme is run.
-
-  #  Extract components from dssp.model
-
-  if (!any(class(x.pred) %in% c("SpatialPointsDataFrame", "SpatialPoints"))) {
-    sp::coordinates(x.pred) <- dssp.model$coords
+predict.dsspMod <- function(object, newdata, ...) {
+  if (missing(newdata)) {
+    if("y_fitted" %in% names(object)) return(object$y_fitted)
+    m <- make.M(object$X)
+    nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
+    return(nu * object$y_scaling$scale + object$y_scaling$center)
+  } 
+  if (!any(class(newdata) %in% c("SpatialPointsDataFrame", "SpatialPoints"))) {
+    sp::coordinates(newdata) <- object$coords
   }
-  w.pred <- sp::coordinates(x.pred)
+  w.pred <- sp::coordinates(newdata)
   if (any(!grepl("scaled", names(attributes(w.pred))))) {
-    w.pred <- scale(w.pred, center = dssp.model$coord_scaling$center, scale = dssp.model$coord_scaling$scale)
+    w.pred <- scale(w.pred, center = object$coord_scaling$center, scale = object$coord_scaling$scale)
   }
-  if (dssp.model$intercept_only) {
-    x.pred <- w.pred
+  if (object$intercept_only) {
+    newdata <- w.pred
   }
-
-  x <- dssp.model$X
-  y <- dssp.model$Y
-  eta <- dssp.model$eta
-  delta <- dssp.model$delta
-
-  if ("nu" %in% names(dssp.model)) {
-    nu <- dssp.model$nu
+  
+  x <- object$X
+  y <- object$Y
+  eta <- object$eta
+  delta <- object$delta
+  
+  if ("nu" %in% names(object)) {
+    nu <- object$nu
   } else {
     m <- make.M(x)
     nu <- sample.nu(y, eta, delta, m$M.eigen$values, m$M.eigen$vectors)
   }
   N <- length(eta)
   n <- length(y)
-  X <- rbind(x, x.pred)
+  X <- rbind(x, newdata)
   m <- nrow(X) - n
   Y <- c(y, rep(0, m))
-
+  
   ##  Make augmented M matrix
   M.list <- make.M(X)
-
+  
   ##  Extract Vectors
   v <- M.list$M.eigen$vectors
-
+  
   ##  Extract Values
   ev <- M.list$M.eigen$values
-
+  
   y.pred <- .sample_y_pred_cpp(list(N = N, eta = eta, ev = ev, v = v, Y = Y, delta = delta, n = n, m = m, nu = nu))
-
-  y.pred * dssp.model$y_scaling$scale + dssp.model$y_scaling$center
+  
+  y.pred * object$y_scaling$scale + object$y_scaling$center
 }
