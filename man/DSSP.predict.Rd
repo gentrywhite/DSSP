@@ -29,21 +29,15 @@ library(sp)
 library(gstat)
 data(meuse.all)
 coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-
-Y<-scale(log(meuse.all$zinc))
-
-Y.train<-Y[1:155]
-X.train<-X[1:155,]
-X.pred<-X[156:164,]
 
 f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE)
+OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all[1:155,],N=100,f,pars=c(0.001,0.001))
 
-Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
+##Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
+Y.PRED<-DSSP.predict(OUTPUT,meuse.all[156:164,])
 }
 \keyword{prior,}
 \keyword{spatial}

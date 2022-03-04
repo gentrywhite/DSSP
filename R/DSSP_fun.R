@@ -300,14 +300,15 @@ sample.nu<-function(Y,eta,delta,EV,V)
 #'This function samples from the log-posterior of all parameters in the model and returns a list
 #'    object containing the samples. It performs a few compatibility checks on the inputs, then
 #'    calls the sample.eta(), sample.delta(), and sample.nu().
+#'@param formula a two sided linear formula with the response on left and the covariates on the right
+#'@param data a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.
 #'@param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu
-#'@param x a matrix of spatial coordinates
-#'@param y vector of obsered data
 #'@param log_prior a function evaluating the log of ther prior density of eta    
 #'@param pars a vector of the prior shape and rate parameters for the
 #'    inverse-gamma prior distribution of delta, the variance parameter for the
 #'    Gaussian likelihood.
 #'@param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
+#'@param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}
 #'@keywords spatial prior, thin-plate splines
 #'@return A list containing N samples of nu, eta, delta, and the original data X and Y.
 #'@details
@@ -328,23 +329,20 @@ sample.nu<-function(Y,eta,delta,EV,V)
 #'library(gstat)
 #'data(meuse.all)
 #'coordinates(meuse.all)<-~x+y
-#'X<-scale(coordinates(meuse.all))
-#'
-#'Y<-scale(log(meuse.all$zinc))
 #'
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE)
+#'OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all,N=100,f,pars=c(0.001,0.001),fitted.values=FALSE)
 
 DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
 {
-  
-  if(class(data)!="SpatialPointsDataFrame"){
-    sp::coordinates(data) = coords
+  if(all(class(data)!="SpatialPointsDataFrame")){
+    sp::coordinates(data) <- coords
   }else{
     if(!is.null(coords)) message("obtaining spatial coordinates from data; ignoring coords provided")
+    coords <- NULL
   }
   
   w <- sp::coordinates(data)
@@ -358,26 +356,25 @@ DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
     coord_scaling <- list(center=NA, scale=NA)
   }
   
-  mt <- terms(formula, data=data)
-  mf <- lm(formula, data=data, method="model.frame")
-  y <- model.extract(mf, "response")
+  mt <- stats::terms(formula, data=data)
+  mf <- stats::lm(formula, data=data, method="model.frame")
+  y <- stats::model.extract(mf, "response")
   y <- scale(y)
   y_scaling <- list(
     center=attr(y, "scaled:center"),
     scale=attr(y, "scaled:scale")
   )
-  x <- model.matrix(mt, mf)
+  x <- stats::model.matrix(mt, mf)
   
   if(attr(x, "assign")==0 & dim(x)[2]==1){
     # if model is y ~ 1: x is just the coordinates and old version of DSSP can be run
     x <- w
+    intercept_only <- TRUE
   }else{
     # use both covariates and coordinates for model fitting
+    intercept_only <- FALSE
     return(message("Currently only works for intercept only models: formula=y~1"))
   }
-  
-  #  UseMethod("DSSP")
-  ##  Test Inputs
   
   N<-as.integer(N)
   X<-as.matrix(x)
@@ -426,21 +423,13 @@ DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
   
   delta<-sample.delta(eta,ND,EV,Q,pars)
   
-  if(fitted.values == TRUE)
-  {
-    ##  sample nu
-    
-    nu<-sample.nu(Y,eta,delta,EV,V)
-    
-    return(list(eta=eta,delta=delta,nu=nu,X=X,Y=Y))
+  out <- list(eta=eta,delta=delta)
+  if(fitted.values){
+    out <- append(out, list(nu=sample.nu(Y,eta,delta,EV,V)))
   }
   
-  else
-  {
-    return(list(eta=eta,delta=delta,X=X,Y=Y))
-  }
-  
-  
+  append(out, list(X=X,Y=Y,y_scaling=y_scaling,coord_scaling=coord_scaling,
+                   coords=coords,intercept_only=intercept_only))
 }
 
 # .onUnload <- function (libpath) {
@@ -469,21 +458,15 @@ DSSP<-function(formula,data,N,log_prior,pars,fitted.values=FALSE,coords=NULL)
 #'library(gstat)
 #'data(meuse.all)
 #'coordinates(meuse.all)<-~x+y
-#'X<-scale(coordinates(meuse.all))
-#'
-#'Y<-scale(log(meuse.all$zinc))
-#'
-#'Y.train<-Y[1:155]
-#'X.train<-X[1:155,]
-#'X.pred<-X[156:164,]
 #'
 #'f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #'
 #'## Draw 100 samples from the posterior of eta given the data y.
 #'
-#'OUTPUT<-DSSP(100,X.train,Y.train,f,pars=c(0.001,0.001),fitted.values=FALSE)
+#'OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all[1:155,],N=100,f,pars=c(0.001,0.001))
 #'
-#'Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
+#'##Y.PRED<-DSSP.predict(OUTPUT,X.pred,ncores=1)
+#'Y.PRED<-DSSP.predict(OUTPUT,meuse.all[156:164,])
 
 DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate samples
   ## TODO ncores is probably unecessary for this function now with cpp version of smaple.nu()?
@@ -495,6 +478,17 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
   ##  computed first then the predict scheme is run.
   
   #  Extract components from dssp.model
+  
+  if(class(x.pred)!="SpatialPointsDataFrame"){
+    sp::coordinates(x.pred) = dssp.model$coords
+  }
+  w.pred <- sp::coordinates(x.pred)
+  if(any(!grepl("scaled", names(attributes(w.pred))))){
+    w.pred <- scale(w.pred, center=dssp.model$coord_scaling$center, scale=dssp.model$coord_scaling$scale)
+  }
+  if(dssp.model$intercept_only){
+    x.pred <- w.pred
+  }
   
   x<-dssp.model$X
   y<-dssp.model$Y
@@ -523,6 +517,7 @@ DSSP.predict<-function(dssp.model,x.pred,ncores=1){ ##  function to generate sam
   ev<-M.list$M.eigen$values
   
   y.pred <- .sample_y_pred_cpp(list(N=N,eta=eta,ev=ev,v=v,Y=Y,delta=delta,n=n,m=m,nu=nu))
-  return(y.pred)
+  
+  y.pred*dssp.model$y_scaling$scale+dssp.model$y_scaling$center
 }
 

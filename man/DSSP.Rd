@@ -4,14 +4,14 @@
 \alias{DSSP}
 \title{DSSP}
 \usage{
-DSSP(N, x, y, log_prior, pars, fitted.values = FALSE)
+DSSP(formula, data, N, log_prior, pars, fitted.values = FALSE, coords = NULL)
 }
 \arguments{
+\item{formula}{a two sided linear formula with the response on left and the covariates on the right}
+
+\item{data}{a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.}
+
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu}
-
-\item{x}{a matrix of spatial coordinates}
-
-\item{y}{vector of obsered data}
 
 \item{log_prior}{a function evaluating the log of ther prior density of eta}
 
@@ -20,6 +20,8 @@ inverse-gamma prior distribution of delta, the variance parameter for the
 Gaussian likelihood.}
 
 \item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
+
+\item{coords}{spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}}
 }
 \value{
 A list containing N samples of nu, eta, delta, and the original data X and Y.
@@ -51,15 +53,12 @@ library(sp)
 library(gstat)
 data(meuse.all)
 coordinates(meuse.all)<-~x+y
-X<-scale(coordinates(meuse.all))
-
-Y<-scale(log(meuse.all$zinc))
 
 f<-function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 
 ## Draw 100 samples from the posterior of eta given the data y.
 
-OUTPUT<-DSSP(100,X,Y,f,pars=c(0.001,0.001),fitted.values=FALSE)
+OUTPUT<-DSSP(formula=log(zinc)~1,data=meuse.all,N=100,f,pars=c(0.001,0.001),fitted.values=FALSE)
 }
 \keyword{prior,}
 \keyword{spatial}
