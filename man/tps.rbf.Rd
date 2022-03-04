@@ -12,7 +12,7 @@ tps.rbf(x, is.even)
 \item{is.even}{is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.}
 }
 \value{
-The resulting value of the thin-pkate spline radial basis function
+The resulting value of the thin-plate spline radial basis function.
 }
 \description{
 Function to compute the thin-plate splines radial basis function for internal use by the function make.M().

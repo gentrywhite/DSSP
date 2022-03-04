@@ -7,9 +7,9 @@
 DSSP.predict(dssp.model, x.pred, ncores = 1)
 }
 \arguments{
-\item{dssp.model}{the model output from DSSP()}
+\item{dssp.model}{the model output from \code{DSSP()}.}
 
-\item{x.pred}{a matrix of spatial coordinates to predict new values of y}
+\item{x.pred}{a matrix of spatial coordinates to predict new values of y.}
 
 \item{ncores}{number of cores to use when sampling from the posterior predictive distribution,
 defaults to 1. This is an optional argument to pass to rmvn() from the mvnfast package
@@ -23,7 +23,7 @@ A matrix with N columns containing N values from the posterior predictive distri
 This function samples from the log-posterior of all parameters in the model
 }
 \examples{
-#' ## Use the Meuse River dataset from the package 'gstat'
+## Use the Meuse River dataset from the package 'gstat'
 
 library(sp)
 library(gstat)

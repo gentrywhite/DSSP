@@ -15,7 +15,7 @@ sample.delta(eta, ND, EV, Q, pars)
 
 \item{Q}{the data vector from the make.Q function.}
 
-\item{pars}{a vector of the prior shape and rate parameters for the
+\item{pars}{a vector of the prior shape and rate parameters for the 
 inverse-gamma prior distribution of delta.}
 }
 \value{

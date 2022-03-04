@@ -13,7 +13,7 @@ NULL
 #' @param x is a Euclidean distance between two points.
 #' @param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
 #' @keywords thin-plate spline basis function
-#' @return The resulting value of the thin-pkate spline radial basis function
+#' @return The resulting value of the thin-plate spline radial basis function.
 #' @details This function computes the thin-plate spline radial basis function depending on the if d is odd or even.
 #' @export
 #' @examples
@@ -36,13 +36,14 @@ tps.rbf <- function(x, is.even) {
 
 #' Precision Matrix Function
 #'
-#' This function creates the precision matrix for the spatial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
-#' @param X a matrix of spatial coordinates.  It is recommended that the coordinates be scaled and centred.
+#' This function creates the precision matrix for the spatial prior based on thin-plate splines 
+#' and returns the matrix M, and its eigenvalues and eigenvectors
+#' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
 #' @keywords spatial prior, thin-plate splines
-#' @return A list containing the precision matrix M and the object M.eigen containing
-#'  eigenvalues and eigenvectors for the matrix M.
+#' @return A list containing the precision matrix M and the object M.eigen containing 
+#' eigenvalues and eigenvectors for the matrix M.
 #' @details The M matrix is the precision matrix for the
-#'  spatial effects from the direct sampling spatial prior (DSSP) model.  M is based on
+#'  spatial effects from the direct sampling spatial prior (DSSP) model. M is based on
 #'  thin plate splines basis functions, see White et. al. 2019 for more details on how the
 #'  matrix M is constructed.
 #' @export
@@ -86,10 +87,10 @@ make.M <- function(X) {
 
 #' Data Vector Function
 #'
-#' This function creates the the data vector for evaluating the joint posterior distribution of
-#'    the direct sampling spatial prior (DSSP) model.
-#' @param y a vector of observed data
-#' @param V a matrix of eigen vectors from the precision matrix computed by make.M()
+#' This function creates the the data vector for evaluating the joint posterior distribution of 
+#' the direct sampling spatial prior (DSSP) model.
+#' @param y a vector of observed data.
+#' @param V a matrix of eigen vectors from the precision matrix computed by \code{make.M()}.
 #' @keywords spatial prior, thin-plate splines
 #' @return A vector Q = y' V which is used in subsequent functions for sampling
 #'  from the  joint posterior distribution.
@@ -113,8 +114,7 @@ make.Q <- function(y, V) {
   crossprod(y, V)
 }
 
-#' Function to sample from the posterior of the smoothing parameter eta conditioned on the data
-#'    y.
+#' Function to sample from the posterior of the smoothing parameter eta conditioned on the data y.
 #'
 #' This function samples from the log-posterior density of the smoothing parameter from the
 #'   thin-plate splines based spatial prior using a ratio-of-uniform sampler.
@@ -122,9 +122,9 @@ make.Q <- function(y, V) {
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #' @param Q the data vector from the make.Q function.
-#' @param UL the upper limit for the smoothing parameter value; used for the
-#'  ratio-of-uniform sampler, default is 1000.
-#' @param log_prior a function of x evaluating the log of the prior dentisy for eta
+#' @param UL the upper limit for the smoothing parameter value; used for the 
+#' ratio-of-uniform sampler, default is 1000.
+#' @param log_prior a function of x evaluating the log of the prior density for eta
 #' @keywords spatial prior, thin-plate splines
 #' @return N samples drawn from the posterior of eta given the data y \eqn{\pi(eta | y)}.
 #' @export
@@ -164,8 +164,8 @@ sample.eta <- function(N, ND, EV, Q, UL = 1000, log_prior) {
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #' @param Q the data vector from the make.Q function.
-#' @param pars a vector of the prior shape and rate parameters for the
-#'    inverse-gamma prior distribution of delta.
+#' @param pars a vector of the prior shape and rate parameters for the 
+#' inverse-gamma prior distribution of delta.
 #' @keywords spatial prior, thin-plate splines
 #' @return N samples drawn from the posterior of \eqn{\pi(delta | eta, y)}.
 #' @export
@@ -220,15 +220,15 @@ sample.delta <- function(eta, ND, EV, Q, pars) {
 #'
 #' This function samples from the posterior density of the spatial effects from the direct sampling
 #'  spatial prior (DSSP) model.
-#' @param Y vector of observed data
-#' @param eta samples of the smoothing parameter from the sample.eta function
-#' @param delta samples of the variance parameter from the sample.delta function
-#' @param EV eigenvalues of the precision matrix spatial prior from the function make.M()
-#' @param V eigenvectors of the precision matrix spatial prior from the function make.M()
+#' @param Y vector of observed data.
+#' @param eta samples of the smoothing parameter from the \code{sample.eta} function.
+#' @param delta samples of the variance parameter from the \code{sample.delta} function.
+#' @param EV eigenvalues of the precision matrix spatial prior from the function \code{make.M()}.
+#' @param V eigenvectors of the precision matrix spatial prior from the function \code{make.M()}.
 #' @keywords spatial prior, thin-plate splines
 #' @keywords spatial prior, thin-plate splines
-#' @return A matrix of samples with each column a random draw from the posterior
-#'    of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
+#' @return A matrix of samples with each column a random draw from the posterior 
+#' of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
 #' @export
 #' @examples
 #' ## Use the Meuse River dataset from the package 'gstat'
@@ -266,15 +266,14 @@ sample.nu <- function(Y, eta, delta, EV, V) {
 #' This function samples from the log-posterior of all parameters in the model and returns a list
 #'    object containing the samples. It performs a few compatibility checks on the inputs, then
 #'    calls the sample.eta(), sample.delta(), and sample.nu().
-#' @param formula a two sided linear formula with the response on left and the covariates on the right
+#' @param formula a two sided linear formula with the response on left and the covariates on the right.
 #' @param data a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.
-#' @param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu
-#' @param pars a vector of the prior shape and rate parameters for the
-#'    inverse-gamma prior distribution of delta, the variance parameter for the
-#'    Gaussian likelihood.
+#' @param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.
+#' @param pars a vector of the prior shape and rate parameters for the inverse-gamma 
+#' prior distribution of delta, the variance parameter for the Gaussian likelihood.
 #' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
-#' @param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to FALSE.
-#' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}
+#' @param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to \code{FALSE}.
+#' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.
 #' @keywords spatial prior, thin-plate splines
 #' @return A list containing N samples of nu, eta, delta, and the original data X and Y.
 #' @details
@@ -394,8 +393,8 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 #'
 #'
 #' This function samples from the log-posterior of all parameters in the model
-#' @param dssp.model the model output from DSSP()
-#' @param x.pred a matrix of spatial coordinates to predict new values of y
+#' @param dssp.model the model output from \code{DSSP()}.
+#' @param x.pred a matrix of spatial coordinates to predict new values of y.
 #' @param ncores number of cores to use when sampling from the posterior predictive distribution,
 #'    defaults to 1. This is an optional argument to pass to rmvn() from the mvnfast package
 #'    It requires that the user's system has OpenMP installed and packages are set to build with
@@ -404,7 +403,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 #' @return A matrix with N columns containing N values from the posterior predictive distribution.
 #' @export
 #' @examples
-#' #' ## Use the Meuse River dataset from the package 'gstat'
+#' ## Use the Meuse River dataset from the package 'gstat'
 #'
 #' library(sp)
 #' library(gstat)

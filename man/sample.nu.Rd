@@ -7,19 +7,19 @@
 sample.nu(Y, eta, delta, EV, V)
 }
 \arguments{
-\item{Y}{vector of observed data}
+\item{Y}{vector of observed data.}
 
-\item{eta}{samples of the smoothing parameter from the sample.eta function}
+\item{eta}{samples of the smoothing parameter from the \code{sample.eta} function.}
 
-\item{delta}{samples of the variance parameter from the sample.delta function}
+\item{delta}{samples of the variance parameter from the \code{sample.delta} function.}
 
-\item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M()}
+\item{EV}{eigenvalues of the precision matrix spatial prior from the function \code{make.M()}.}
 
-\item{V}{eigenvectors of the precision matrix spatial prior from the function make.M()}
+\item{V}{eigenvectors of the precision matrix spatial prior from the function \code{make.M()}.}
 }
 \value{
-A matrix of samples with each column a random draw from the posterior
-   of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
+A matrix of samples with each column a random draw from the posterior 
+of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
 }
 \description{
 This function samples from the posterior density of the spatial effects from the direct sampling

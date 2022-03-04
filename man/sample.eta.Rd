@@ -2,8 +2,7 @@
 % Please edit documentation in R/DSSP_fun.R
 \name{sample.eta}
 \alias{sample.eta}
-\title{Function to sample from the posterior of the smoothing parameter eta conditioned on the data
-   y.}
+\title{Function to sample from the posterior of the smoothing parameter eta conditioned on the data y.}
 \usage{
 sample.eta(N, ND, EV, Q, UL = 1000, log_prior)
 }
@@ -16,10 +15,10 @@ sample.eta(N, ND, EV, Q, UL = 1000, log_prior)
 
 \item{Q}{the data vector from the make.Q function.}
 
-\item{UL}{the upper limit for the smoothing parameter value; used for the
+\item{UL}{the upper limit for the smoothing parameter value; used for the 
 ratio-of-uniform sampler, default is 1000.}
 
-\item{log_prior}{a function of x evaluating the log of the prior dentisy for eta}
+\item{log_prior}{a function of x evaluating the log of the prior density for eta}
 }
 \value{
 N samples drawn from the posterior of eta given the data y \eqn{\pi(eta | y)}.

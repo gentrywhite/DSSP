@@ -7,20 +7,20 @@
 make.Q(y, V)
 }
 \arguments{
-\item{y}{a vector of observed data}
+\item{y}{a vector of observed data.}
 
-\item{V}{a matrix of eigen vectors from the precision matrix computed by make.M()}
+\item{V}{a matrix of eigen vectors from the precision matrix computed by \code{make.M()}.}
 }
 \value{
 A vector Q = y' V which is used in subsequent functions for sampling
  from the  joint posterior distribution.
 }
 \description{
-This function creates the the data vector for evaluating the joint posterior distribution of
-   the direct sampling spatial prior (DSSP) model.
+This function creates the the data vector for evaluating the joint posterior distribution of 
+the direct sampling spatial prior (DSSP) model.
 }
 \examples{
-#' ## Use the Meuse River dataset from the package 'gstat'
+## Use the Meuse River dataset from the package 'gstat'
 
 library(sp)
 library(gstat)

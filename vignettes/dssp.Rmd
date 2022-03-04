@@ -64,7 +64,7 @@ Given this it is possible to derive the set of posterior distributions
 \pi\left(\delta|\eta,\mathbf{y}\right)\\
 \pi\left(\eta|\mathbf{y}\right)
 \]
-whcih can be sampled directly in sequence to create a draw from the joint posterior 
+which can be sampled directly in sequence to create a draw from the joint posterior 
 \[
 \pi\left(\mathbf{\nu},\delta_0,\eta|\mathbf{y}\right).
 \]

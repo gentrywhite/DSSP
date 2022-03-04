@@ -15,21 +15,20 @@ DSSP(
 )
 }
 \arguments{
-\item{formula}{a two sided linear formula with the response on left and the covariates on the right}
+\item{formula}{a two sided linear formula with the response on left and the covariates on the right.}
 
 \item{data}{a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.}
 
-\item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu}
+\item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.}
 
-\item{pars}{a vector of the prior shape and rate parameters for the
-inverse-gamma prior distribution of delta, the variance parameter for the
-Gaussian likelihood.}
+\item{pars}{a vector of the prior shape and rate parameters for the inverse-gamma 
+prior distribution of delta, the variance parameter for the Gaussian likelihood.}
 
 \item{log_prior}{a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.}
 
-\item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to FALSE.}
+\item{fitted.values}{return a matrix containing samples of the fitted values at each location X, defaults to \code{FALSE}.}
 
-\item{coords}{spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}}
+\item{coords}{spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.}
 }
 \value{
 A list containing N samples of nu, eta, delta, and the original data X and Y.

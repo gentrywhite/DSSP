@@ -7,18 +7,19 @@
 make.M(X)
 }
 \arguments{
-\item{X}{a matrix of spatial coordinates.  It is recommended that the coordinates be scaled and centred.}
+\item{X}{a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.}
 }
 \value{
-A list containing the precision matrix M and the object M.eigen containing
- eigenvalues and eigenvectors for the matrix M.
+A list containing the precision matrix M and the object M.eigen containing 
+eigenvalues and eigenvectors for the matrix M.
 }
 \description{
-This function creates the precision matrix for the spatial prior based on thin-plate splines and returns the matrix M, and its eigenvalues and eigenvectors
+This function creates the precision matrix for the spatial prior based on thin-plate splines 
+and returns the matrix M, and its eigenvalues and eigenvectors
 }
 \details{
 The M matrix is the precision matrix for the
- spatial effects from the direct sampling spatial prior (DSSP) model.  M is based on
+ spatial effects from the direct sampling spatial prior (DSSP) model. M is based on
  thin plate splines basis functions, see White et. al. 2019 for more details on how the
  matrix M is constructed.
 }
