@@ -88,13 +88,10 @@ data("meuse")
 
 Next, set the coordinates for the data and extract the $X$ matrix of locations and the $Y$ the log of observed zinc concentrations,
 ```{r,eval=TRUE,include=TRUE}
-coordinates(meuse.all) = ~x+y
-
-X<-scale(coordinates(meuse.all))
-X.train<-X[1:155,]
-Y<-scale(log(meuse.all$zinc))
-Y.train<-Y[1:155]
-X.pred<-X[156:164,]
+meuse.train <- meuse.all[1:155,]
+meuse.valid <- meuse.all[156:164, c("x", "y")]
+coordinates(meuse.train) = ~x+y
+coordinates(meuse.valid) = ~x+y
 ```
 note that data are scaled, this is typically good practice. 
 
@@ -102,8 +99,8 @@ Next, we select the number of samples to draw and invoke the function DSSP().
 
 ```{r,eval=TRUE,include=TRUE}
 N<-10000  ## number of samples to draw from the DSSP model
+meuse.fit<-DSSP(formula=log(zinc)~1, data=meuse.train, N=N,function(x) -2*log(1+x), fitted.values = TRUE,pars=c(0.001,0.001))
 
-meuse.fit<-DSSP(N,X.train,Y.train,function(x) -2*log(1+x), fitted.values = TRUE,pars=c(0.001,0.001))
 ETA<-meuse.fit$eta
 DELTA<-meuse.fit$delta
 NU<-meuse.fit$nu
@@ -111,12 +108,7 @@ NU<-meuse.fit$nu
 The function DSSP() takes as its argument $N$ the number of samples desired, $X$ the matrix of coordinate pairs indicating locations of the observed data $Y$, as well as a function specifying the prior density of $\eta$, the shape and rate parameters of the inverse-gamma prior for $\delta$, and $ncores$ the number of cores to use. The argument $ncores$ is an optional argument that is only effective if your version of R is configured to use OpenMP.  
 
 ```{r,eval=TRUE,include=TRUE,fig.align="center",fig.width=5.5,fig.height=4.25}
-##  Rescale NU to find the smoothed values of the observed data
-
-center.y<-attr(Y,"scaled:center")
-scale.y<-attr(Y,"scaled:scale")
-
-Yhat<-rowMeans(exp(NU*scale.y+center.y))
+Yhat<-rowMeans(exp(meuse.fit$y_fitted))
 
 meuse$Yhat<-Yhat ## Model estimates of E(zinc concentration (ppm))
 meuse$Y.true<-meuse.all$zinc[1:155]
@@ -204,8 +196,8 @@ delta.cumsumplot
 
 
 ```{r,eval=TRUE,include=TRUE}
-Y.pred<-DSSP.predict(meuse.fit,X.pred)
-Y.pred<-exp(Y.pred*scale.y+center.y)
+Y.pred<-DSSP.predict(meuse.fit,meuse.valid)
+Y.pred<-exp(Y.pred)
 
 pred.data<-data.frame(Yhat.pred=rowMeans(Y.pred),Y.true=meuse.all$zinc[156:164])
 
