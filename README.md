@@ -31,16 +31,10 @@ Short example using the Meuse dataset from the `{gstat}` package.
 
 ``` r
 data("meuse.all", package = "gstat")
-sp::coordinates(meuse.all) <- ~ x + y
-X <- scale(sp::coordinates(meuse.all))
-X.train <- X[1:155, ]
-Y <- scale(log(meuse.all$zinc))
-Y.train <- Y[1:155]
-X.pred <- X[156:164, ]
-N <- 10000
-
-center.y <- attr(Y, "scaled:center")
-scale.y <- attr(Y, "scaled:scale")
+meuse.train <- meuse.all[1:155,]
+meuse.valid <- meuse.all[156:164, c("x", "y")]
+sp::coordinates(meuse.train) = ~x+y
+sp::coordinates(meuse.valid) = ~x+y
 ```
 
 This model does not include any covariates.
@@ -48,7 +42,7 @@ This model does not include any covariates.
 ``` r
 library(DSSP)
 meuse.fit <- DSSP(
-  N = 10000, x = X.train, y = Y.train,
+  formula=log(zinc)~1, data=meuse.train, N = 10000, 
   log_prior = function(x) -2 * log(1 + x), pars = c(0.001, 0.001),
   fitted.values = TRUE
 )
@@ -58,7 +52,7 @@ The fitted values are close to the actual values.
 
 ``` r
 library(ggplot2)
-Yhat <- rowMeans(exp(meuse.fit$nu * scale.y + center.y))
+Yhat <- rowMeans(exp(meuse.fit$y_fitted))
 Ytrue <- meuse.all$zinc[1:155]
 
 data.frame(Yhat = Yhat, Ytrue = Ytrue) |>
