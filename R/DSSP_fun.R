@@ -39,6 +39,7 @@ tps.rbf <- function(x, is.even) {
 #' This function creates the precision matrix for the spatial prior based on thin-plate splines 
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
+#' @param intercept_only binary argument indicating whether covariates are excluded from the model.
 #' @keywords spatial prior, thin-plate splines
 #' @return A list containing the precision matrix M and the object M.eigen containing 
 #' eigenvalues and eigenvectors for the matrix M.
@@ -56,7 +57,7 @@ tps.rbf <- function(x, is.even) {
 #' coordinates(meuse.all) <- ~ x + y
 #' X <- scale(coordinates(meuse.all))
 #' make.M(X)
-make.M <- function(X) {
+make.M <- function(X, intercept_only=TRUE) {
   X <- as.matrix(X)
   n <- nrow(X)
   dimX <- ncol(X)
@@ -80,6 +81,11 @@ make.M <- function(X) {
   G.inv <- qr.solve(G)
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
+  if(!intercept_only) {
+    M2 <- matrix(0, nrow=dim(M)[1]*2, ncol=dim(M)[2]*2)
+    M2[(dim(M)[1]+1):(dim(M2)[1]), (dim(M)[2]+1):(dim(M2)[2])] <- m
+    M <- M2
+  }
   M <- as.matrix(Matrix::forceSymmetric(M))
   M.eigen <- eigen(M, symmetric = TRUE)
   list(M = M, M.eigen = M.eigen)
@@ -340,7 +346,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   } else {
     # use both covariates and coordinates for model fitting
     intercept_only <- FALSE
-    return(message("Currently only works for intercept only models: formula=y~1"))
+    message("Currently only works for intercept only models: formula=y~1")
   }
 
   N <- as.integer(N)
@@ -354,11 +360,10 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   ##  Declare dimensional constants
   n <- length(Y)
   d <- ncol(X) + 1
-  nd <- n - d
   ND <- n - d
 
   ##  Compute M
-  M.list <- make.M(X) ##  Only Needs to return the eigenvalues and vectors
+  M.list <- make.M(X, intercept_only = intercept_only) ##  Only Needs to return the eigenvalues and vectors
   M <- M.list$M
 
   EV <- M.list$M.eigen$values
@@ -389,7 +394,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 predict.dsspMod <- function(object, newdata, ...) {
   if (missing(newdata)) {
     if("y_fitted" %in% names(object)) return(object$y_fitted)
-    m <- make.M(object$X)
+    m <- make.M(object$X, intercept_only = object$intercept_only)
     nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
     return(nu * object$y_scaling$scale + object$y_scaling$center)
   } 
@@ -412,7 +417,7 @@ predict.dsspMod <- function(object, newdata, ...) {
   if ("nu" %in% names(object)) {
     nu <- object$nu
   } else {
-    m <- make.M(x)
+    m <- make.M(x, intercept_only = object$intercept_only)
     nu <- sample.nu(y, eta, delta, m$M.eigen$values, m$M.eigen$vectors)
   }
   N <- length(eta)
@@ -422,7 +427,7 @@ predict.dsspMod <- function(object, newdata, ...) {
   Y <- c(y, rep(0, m))
   
   ##  Make augmented M matrix
-  M.list <- make.M(X)
+  M.list <- make.M(X, intercept_only = object$intercept_only)
   
   ##  Extract Vectors
   v <- M.list$M.eigen$vectors
