@@ -40,6 +40,7 @@ tps.rbf <- function(x, is.even) {
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
 #' @param intercept_only binary argument indicating whether covariates are excluded from the model.
+#' @param p the number of parameters in the model.
 #' @keywords spatial prior, thin-plate splines
 #' @return A list containing the precision matrix M and the object M.eigen containing 
 #' eigenvalues and eigenvectors for the matrix M.
@@ -57,7 +58,7 @@ tps.rbf <- function(x, is.even) {
 #' coordinates(meuse.all) <- ~ x + y
 #' X <- scale(coordinates(meuse.all))
 #' make.M(X)
-make.M <- function(X, intercept_only=TRUE) {
+make.M <- function(X, intercept_only = TRUE, p = NULL) {
   X <- as.matrix(X)
   n <- nrow(X)
   dimX <- ncol(X)
@@ -82,8 +83,8 @@ make.M <- function(X, intercept_only=TRUE) {
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
   if(!intercept_only) {
-    M2 <- matrix(0, nrow=dim(M)[1]*2, ncol=dim(M)[2]*2)
-    M2[(dim(M)[1]+1):(dim(M2)[1]), (dim(M)[2]+1):(dim(M2)[2])] <- m
+    M2 <- matrix(0, nrow=dim(M)[1] + p, ncol=dim(M)[2] + p)
+    M2[(p+1):(dim(M2)[1]), (p+1):(dim(M2)[2])] <- M
     M <- M2
   }
   M <- as.matrix(Matrix::forceSymmetric(M))
@@ -339,13 +340,14 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   )
   x <- stats::model.matrix(mt, mf)
 
-  if (attr(x, "assign") == 0 & dim(x)[2] == 1) {
+  if (attr(x, "assign")[1] == 0 & dim(x)[2] == 1) {
     # if model is y ~ 1: x is just the coordinates and old version of DSSP can be run
     x <- w
     intercept_only <- TRUE
   } else {
     # use both covariates and coordinates for model fitting
     intercept_only <- FALSE
+    p <- ncol(x)
     message("Currently only works for intercept only models: formula=y~1")
   }
 
@@ -363,7 +365,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   ND <- n - d
 
   ##  Compute M
-  M.list <- make.M(X, intercept_only = intercept_only) ##  Only Needs to return the eigenvalues and vectors
+  M.list <- make.M(X, intercept_only = intercept_only, p = p) ##  Only Needs to return the eigenvalues and vectors
   M <- M.list$M
 
   EV <- M.list$M.eigen$values
