@@ -332,7 +332,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 
   mt <- stats::terms(formula, data = data)
   mf <- stats::lm(formula, data = data, method = "model.frame")
-  nobs <- nrow(na.omit(mf))
+  nobs <- nrow(stats::na.omit(mf))
   y <- stats::model.extract(mf, "response")
   y <- scale(y)
   y_scaling <- list(
@@ -445,7 +445,7 @@ predict.dsspMod <- function(object, newdata, ...) {
 
 validate_ci_bounds <- function (prob) {
   if (prob < 0 || prob > 1) {
-    stop2("'prob' must be a single numeric value in [0, 1].")
+    stop("'prob' must be a single numeric value in [0, 1].")
   }
   probs <- c((1 - prob)/2, 1 - (1 - prob)/2)
   probs
@@ -480,21 +480,21 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
   .summary <- function(variables, probs, robust) {
     measures <- list()
     if (robust) {
-      measures$Estimate <- median
+      measures$Estimate <- stats::median
       if (mc_se) {
         measures$MCSE <- posterior::mcse_median
       }
-      measures$Est.Error <- mad
+      measures$Est.Error <- stats::mad
     } else {
-      measures$Estimate <- mean
+      measures$Estimate <- stats::mean
       if (mc_se) {
         measures$MCSE <- posterior::mcse_mean
       }
-      measures$Est.Error <- sd
+      measures$Est.Error <- statsLLsd
     }
     measures <- c(measures, list(
-      ll = function(x) quantile(x, probs=probs[1]),
-      ul = function(x) quantile(x, probs=probs[2]),
+      ll = function(x) stats::quantile(x, probs=probs[1]),
+      ul = function(x) stats:: quantile(x, probs=probs[2]),
       Rhat = posterior::rhat,
       Bulk_ESS = posterior::ess_bulk,
       Tail_ESS = posterior::ess_tail
