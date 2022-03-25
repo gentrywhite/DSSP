@@ -332,6 +332,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 
   mt <- stats::terms(formula, data = data)
   mf <- stats::lm(formula, data = data, method = "model.frame")
+  nobs <- nrow(na.omit(mf))
   y <- stats::model.extract(mf, "response")
   y <- scale(y)
   y_scaling <- list(
@@ -386,8 +387,8 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   
   dssp.out <- 
     append(out, list(
-      X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
-      coords = coords, intercept_only = intercept_only
+      N = N, X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
+      coords = coords, formula = formula, intercept_only = intercept_only, nobs = nobs
     ))
   class(dssp.out) <- "dsspMod"
   dssp.out
@@ -440,4 +441,90 @@ predict.dsspMod <- function(object, newdata, ...) {
   y.pred <- .sample_y_pred_cpp(list(N = N, eta = eta, ev = ev, v = v, Y = Y, delta = delta, n = n, m = m, nu = nu))
   
   y.pred * object$y_scaling$scale + object$y_scaling$center
+}
+
+validate_ci_bounds <- function (prob) {
+  if (prob < 0 || prob > 1) {
+    stop2("'prob' must be a single numeric value in [0, 1].")
+  }
+  probs <- c((1 - prob)/2, 1 - (1 - prob)/2)
+  probs
+}
+
+print_format <- function(x, digits = 2, no_digits = c("Bulk_ESS", "Tail_ESS")) {
+  x <- as.matrix(x)
+  digits <- as.numeric(digits)
+  if (length(digits) != 1L) {
+    stop2("'digits' should be a single numeric value.")
+  }
+  out <- x
+  fmt <- paste0("%.", digits, "f")
+  for (i in seq_len(NCOL(x))) {
+    if (isTRUE(colnames(x)[i] %in% no_digits)) {
+      out[, i] <- sprintf("%.0f", x[, i])
+    } else {
+      out[, i] <- sprintf(fmt, x[, i])
+    }
+  }
+  print(out, quote = FALSE, right = TRUE)
+  invisible(x)
+}
+
+summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, ...) {
+  out <- list(
+    formula = object$formula,
+    nobs = object$nobs,
+    niter = object$N
+  )
+  probs <- validate_ci_bounds(prob)
+  .summary <- function(variables, probs, robust) {
+    measures <- list()
+    if (robust) {
+      measures$Estimate <- median
+      if (mc_se) {
+        measures$MCSE <- posterior::mcse_median
+      }
+      measures$Est.Error <- mad
+    } else {
+      measures$Estimate <- mean
+      if (mc_se) {
+        measures$MCSE <- posterior::mcse_mean
+      }
+      measures$Est.Error <- sd
+    }
+    measures <- c(measures, list(
+      ll = function(x) quantile(x, probs=probs[1]),
+      ul = function(x) quantile(x, probs=probs[2]),
+      Rhat = posterior::rhat,
+      Bulk_ESS = posterior::ess_bulk,
+      Tail_ESS = posterior::ess_tail
+    ))
+    
+    
+    out <- lapply(measures, function(m) sapply(variables, function(v) m(v)))
+    out <- as.data.frame(out)
+    
+    prob <- probs[2] - probs[1]
+    
+    names(out)[which(names(out) %in% c("ll", "ul"))] <- paste0(c("l-", "u-"), prob * 100, "% CI")
+    rownames(out) <- names(variables)
+    return(out)
+  }
+  variables <- list(eta=object$eta, delta=object$delta)
+  if(!is.null(object$nu)) {
+    variables$nu = object$nu
+  }
+  full_summary <- .summary(variables, probs, robust)
+  out <- c(out, list(full_summary=full_summary))
+  class(out) <- "dsspModsummary"
+  out
+}
+
+print.dsspModsummary <- function(x, digits = 2, ...) {
+  cat("Formula: ")
+  print(x$formula)
+  cat(paste0("Number of observations: ", x$nobs, "\n"))
+  cat(paste0("Number of iterations: ", x$niter, "\n\n"))
+  cat("Summary of model:\n")
+  print_format(x$full_summary)
 }
