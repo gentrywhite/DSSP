@@ -17,7 +17,8 @@ Imports:
     rust,
     mvnfast,
     gstat,
-    sp
+    sp,
+    posterior
 Suggests: 
     knitr,
     ggplot2,

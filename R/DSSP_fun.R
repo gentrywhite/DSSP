@@ -455,7 +455,7 @@ print_format <- function(x, digits = 2, no_digits = c("Bulk_ESS", "Tail_ESS")) {
   x <- as.matrix(x)
   digits <- as.numeric(digits)
   if (length(digits) != 1L) {
-    stop2("'digits' should be a single numeric value.")
+    stop("'digits' should be a single numeric value.")
   }
   out <- x
   fmt <- paste0("%.", digits, "f")
@@ -477,44 +477,42 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
     niter = object$N
   )
   probs <- validate_ci_bounds(prob)
-  .summary <- function(variables, probs, robust) {
-    measures <- list()
-    if (robust) {
-      measures$Estimate <- stats::median
-      if (mc_se) {
-        measures$MCSE <- posterior::mcse_median
-      }
-      measures$Est.Error <- stats::mad
-    } else {
-      measures$Estimate <- stats::mean
-      if (mc_se) {
-        measures$MCSE <- posterior::mcse_mean
-      }
-      measures$Est.Error <- statsLLsd
-    }
-    measures <- c(measures, list(
-      ll = function(x) stats::quantile(x, probs=probs[1]),
-      ul = function(x) stats:: quantile(x, probs=probs[2]),
-      Rhat = posterior::rhat,
-      Bulk_ESS = posterior::ess_bulk,
-      Tail_ESS = posterior::ess_tail
-    ))
-    
-    
-    out <- lapply(measures, function(m) sapply(variables, function(v) m(v)))
-    out <- as.data.frame(out)
-    
-    prob <- probs[2] - probs[1]
-    
-    names(out)[which(names(out) %in% c("ll", "ul"))] <- paste0(c("l-", "u-"), prob * 100, "% CI")
-    rownames(out) <- names(variables)
-    return(out)
-  }
+  
   variables <- list(eta=object$eta, delta=object$delta)
   if(!is.null(object$nu)) {
     variables$nu = object$nu
   }
-  full_summary <- .summary(variables, probs, robust)
+  
+  measures <- list()
+  if (robust) {
+    measures$Estimate <- stats::median
+    if (mc_se) {
+      measures$MCSE <- posterior::mcse_median
+    }
+    measures$Est.Error <- stats::mad
+  } else {
+    measures$Estimate <- mean
+    if (mc_se) {
+      measures$MCSE <- posterior::mcse_mean
+    }
+    measures$Est.Error <- stats::sd
+  }
+  measures <- c(measures, list(
+    ll = function(x) stats::quantile(x, probs=probs[1]),
+    ul = function(x) stats:: quantile(x, probs=probs[2]),
+    Rhat = posterior::rhat,
+    Bulk_ESS = posterior::ess_bulk,
+    Tail_ESS = posterior::ess_tail
+  ))
+  
+  full_summary <- lapply(measures, function(m) sapply(variables, function(v) m(v)))
+  full_summary <- as.data.frame(full_summary)
+  
+  prob <- probs[2] - probs[1]
+  
+  names(full_summary)[which(names(full_summary) %in% c("ll", "ul"))] <- paste0(c("l-", "u-"), prob * 100, "% CI")
+  rownames(full_summary) <- names(variables)
+  
   out <- c(out, list(full_summary=full_summary))
   class(out) <- "dsspModsummary"
   out
