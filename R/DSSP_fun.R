@@ -443,6 +443,27 @@ predict.dsspMod <- function(object, newdata, ...) {
   y.pred * object$y_scaling$scale + object$y_scaling$center
 }
 
+residuals.dsspMod <- function(object, newdata, robust, ...) {
+  if (missing(newdata)) {
+    if("y_fitted" %in% names(object)) {
+      y_fitted <- object$y_fitted
+    } else {
+      m <- make.M(object$X, intercept_only = object$intercept_only)
+      nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
+      y_fitted <- nu * object$y_scaling$scale + object$y_scaling$center
+    }
+    y <- object$Y * object$y_scaling$scale + object$y_scaling$center
+  } else {
+    y_fitted <- predict.dsspMod(object, newdata=newdata)
+    mf <- stats::lm(object$formula, data = newdata, method = "model.frame")
+    y <- stats::model.extract(mf, "response")
+  }
+  
+  metric <- ifelse(robust, stats::median, mean)
+  
+  y - apply(y_fitted, 1, metric)
+}
+
 validate_ci_bounds <- function (prob) {
   if (prob < 0 || prob > 1) {
     stop("'prob' must be a single numeric value in [0, 1].")
