@@ -18,7 +18,8 @@ Imports:
     mvnfast,
     gstat,
     sp,
-    posterior
+    posterior,
+    akima
 Suggests: 
     knitr,
     ggplot2,
