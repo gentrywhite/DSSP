@@ -1,9 +1,12 @@
 useDynLib(DSSP, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
+importFrom(grDevices, dev.flush, dev.hold)
+importFrom(graphics, abline, panel.smooth, par, points)
 ## export all regularly named functions
 ## (but allow for private functions whose name starts with a dot).name <- function(...)
 ## exportPattern("^[[:alpha:]]+")
 S3method(print, dsspMod)
+S3method(plot, dsspMod)
 S3method(predict, dsspMod)
 S3method(summary, dsspMod)
 S3method(residuals, dsspMod)

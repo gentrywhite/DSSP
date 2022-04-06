@@ -24,3 +24,7 @@ print_format <- function(x, digits = 2, no_digits = c("Bulk_ESS", "Tail_ESS")) {
   print(out, quote = FALSE, right = TRUE)
   invisible(x)
 }
+
+reverse_scaling <- function(y_scaled, scaling){
+  y_scaled * scaling$scale + scaling$center
+}
