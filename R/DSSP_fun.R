@@ -128,6 +128,11 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   dssp.out
 }
 
+print.dsspMod <- function(x, ...) {
+  # temporary print method for model object
+  print(summary(x, ...))
+}
+
 residuals.dsspMod <- function(object, newdata, robust, ...) {
   if (missing(newdata)) {
     if("y_fitted" %in% names(object)) {
