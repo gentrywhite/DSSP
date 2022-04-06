@@ -50,7 +50,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
     sp::coordinates(data) <- coords
   } else {
     if (!is.null(coords)) message("obtaining spatial coordinates from data; ignoring coords provided")
-    coords <- NULL
+    coords <- sp::coordinates(data)
   }
 
   w <- sp::coordinates(data)
