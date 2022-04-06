@@ -1,6 +1,7 @@
 useDynLib(DSSP, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
 importFrom(grDevices, dev.flush, dev.hold, hcl.colors)
+importFrom(interp, akima)
 importFrom(graphics, abline, panel.smooth, par, points, contour, filled.contour)
 ## export all regularly named functions
 ## (but allow for private functions whose name starts with a dot).name <- function(...)
