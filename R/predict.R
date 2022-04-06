@@ -1,3 +1,20 @@
+#' Predictions from a model with new data.
+#'
+#' @param object a fitted dsspMod object.
+#' @param newdata a data frame for which to evaluate predictions.
+#' @param ... optional and ignored arguments.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' data("meuse.all", package = "gstat")
+#' sp::coordinates(meuse.all) <- ~ x + y
+#' meuse.fit <- DSSP(
+#'     formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 1000, function(x) -2 * log(1 + x),
+#'     fitted.values = TRUE, pars = c(0.001, 0.001)
+#' )
+#' preds <- predict(meuse.fit, meuse.all[156:164, ])
 predict.dsspMod <- function(object, newdata, ...) {
   if (missing(newdata)) {
     if("y_fitted" %in% names(object)) return(object$y_fitted)
