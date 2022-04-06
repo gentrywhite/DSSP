@@ -13,7 +13,7 @@ sample.eta(N, ND, EV, Q, UL = 1000, log_prior)
 
 \item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M().}
 
-\item{Q}{the data vector from the make.Q function.}
+\item{Q}{the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.}
 
 \item{UL}{the upper limit for the smoothing parameter value; used for the 
 ratio-of-uniform sampler, default is 1000.}
@@ -43,7 +43,7 @@ V <- tmp$M.eigen$vectors
 M <- tmp$M
 
 Y <- scale(log(meuse.all$zinc))
-Q <- make.Q(Y, V)
+Q <- crossprod(Y, V)
 
 ND <- nrow(X) - 3
 f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter

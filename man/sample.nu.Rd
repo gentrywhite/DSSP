@@ -39,7 +39,7 @@ EV <- tmp$M.eigen$values
 V <- tmp$M.eigen$vectors
 
 Y <- scale(log(meuse.all$zinc))
-Q <- make.Q(Y, V)
+Q <- crossprod(Y, V)
 
 ND <- nrow(X) - 3
 f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter

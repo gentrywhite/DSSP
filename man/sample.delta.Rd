@@ -13,7 +13,7 @@ sample.delta(eta, ND, EV, Q, pars)
 
 \item{EV}{eigenvalues of the precision matrix spatial prior from the function make.M().}
 
-\item{Q}{the data vector from the make.Q function.}
+\item{Q}{the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.}
 
 \item{pars}{a vector of the prior shape and rate parameters for the 
 inverse-gamma prior distribution of delta.}
@@ -43,7 +43,7 @@ M.list <- make.M(X) ##  Only Needs to return the eigenvalues and vectors
 M <- M.list$M
 EV <- M.list$M.eigen$values
 V <- M.list$M.eigen$vectors
-Q <- make.Q(Y, V)
+Q <- crossprod(Y, V)
 
 f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 ## Draw 100 samples from the posterior of eta given the data y.

@@ -1,33 +1,3 @@
-#' Data Vector Function
-#'
-#' This function creates the the data vector for evaluating the joint posterior distribution of 
-#' the direct sampling spatial prior (DSSP) model.
-#' @param y a vector of observed data.
-#' @param V a matrix of eigen vectors from the precision matrix computed by \code{make.M()}.
-#' @keywords spatial prior, thin-plate splines
-#' @return A vector Q = y' V which is used in subsequent functions for sampling
-#'  from the  joint posterior distribution.
-#' @export
-#' @examples
-#' ## Use the Meuse River dataset from the package 'gstat'
-#'
-#' library(sp)
-#' library(gstat)
-#' data(meuse.all)
-#' coordinates(meuse.all) <- ~ x + y
-#' X <- scale(coordinates(meuse.all))
-#' tmp <- make.M(X)
-#'
-#' EV <- tmp$M.eigen$values
-#' V <- tmp$M.eigen$vectors
-#'
-#' Y <- scale(log(meuse.all$zinc))
-#' Q <- make.Q(Y, V)
-make.Q <- function(y, V) {
-  crossprod(y, V)
-}
-
-
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
 
 ##  DSSP (Direct Sampling Spatial Prior)
@@ -135,7 +105,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
 
   EV <- M.list$M.eigen$values
   V <- M.list$M.eigen$vectors
-  Q <- make.Q(Y, V)
+  Q <- crossprod(Y, V)
 
   ## sample eta
   eta <- sample.eta(N, ND, EV, Q, log_prior, UL = 1000)

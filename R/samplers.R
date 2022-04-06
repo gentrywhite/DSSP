@@ -5,7 +5,7 @@
 #' @param N the number of samples desired.
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
-#' @param Q the data vector from the make.Q function.
+#' @param Q the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.
 #' @param UL the upper limit for the smoothing parameter value; used for the 
 #' ratio-of-uniform sampler, default is 1000.
 #' @param log_prior a function of x evaluating the log of the prior density for eta
@@ -28,7 +28,7 @@
 #' M <- tmp$M
 #'
 #' Y <- scale(log(meuse.all$zinc))
-#' Q <- make.Q(Y, V)
+#' Q <- crossprod(Y, V)
 #'
 #' ND <- nrow(X) - 3
 #' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
@@ -47,7 +47,7 @@ sample.eta <- function(N, ND, EV, Q, UL = 1000, log_prior) {
 #' @param eta samples of the smoothing parameter from the sample.eta function.
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
-#' @param Q the data vector from the make.Q function.
+#' @param Q the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.
 #' @param pars a vector of the prior shape and rate parameters for the 
 #' inverse-gamma prior distribution of delta.
 #' @keywords spatial prior, thin-plate splines
@@ -72,7 +72,7 @@ sample.eta <- function(N, ND, EV, Q, UL = 1000, log_prior) {
 #' M <- M.list$M
 #' EV <- M.list$M.eigen$values
 #' V <- M.list$M.eigen$vectors
-#' Q <- make.Q(Y, V)
+#' Q <- crossprod(Y, V)
 #'
 #' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
 #' ## Draw 100 samples from the posterior of eta given the data y.
@@ -128,7 +128,7 @@ sample.delta <- function(eta, ND, EV, Q, pars) {
 #' V <- tmp$M.eigen$vectors
 #'
 #' Y <- scale(log(meuse.all$zinc))
-#' Q <- make.Q(Y, V)
+#' Q <- crossprod(Y, V)
 #'
 #' ND <- nrow(X) - 3
 #' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
