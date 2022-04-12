@@ -4,7 +4,7 @@
 #' @param newdata a data frame for which to evaluate predictions.
 #' @param ... optional and ignored arguments.
 #'
-#' @return
+#' @return returns matrix with posterior densities for each row in the input data.
 #' @export
 #'
 #' @examples

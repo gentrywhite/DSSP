@@ -14,7 +14,7 @@
 \item{...}{optional and ignored arguments.}
 }
 \value{
-
+returns matrix with posterior densities for each row in the input data.
 }
 \description{
 Predictions from a model with new data.
