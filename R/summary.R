@@ -29,8 +29,7 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
     ll = function(x) stats::quantile(x, probs=probs[1]),
     ul = function(x) stats:: quantile(x, probs=probs[2]),
     Rhat = posterior::rhat,
-    Bulk_ESS = posterior::ess_bulk,
-    Tail_ESS = posterior::ess_tail
+    ESS = ess
   ))
   
   full_summary <- lapply(full_summary_measures, function(m) sapply(variables, function(v) m(v)))

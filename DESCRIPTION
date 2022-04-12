@@ -19,7 +19,8 @@ Imports:
     gstat,
     sp,
     posterior,
-    akima
+    akima,
+    mcmcse
 Suggests: 
     knitr,
     ggplot2,

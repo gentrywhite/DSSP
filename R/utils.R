@@ -28,3 +28,16 @@ print_format <- function(x, digits = 2, no_digits = c("Bulk_ESS", "Tail_ESS")) {
 reverse_scaling <- function(y_scaled, scaling){
   y_scaled * scaling$scale + scaling$center
 }
+
+ess <- function(x) {
+  # nu is returned as a matrix with n_obs rows and N cols. delta and eta have 1 col with N rows.
+  if(ncol(x)>1) { 
+    ess_values <- c()
+    for(i in 1:nrow(x)){
+      ess_values <- append(ess_values, mcmcse::ess(x[i,]))
+    }
+    stats::median(ess_values)
+  } else {
+    mcmcse::ess(x)
+  }
+}
