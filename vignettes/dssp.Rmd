@@ -89,7 +89,7 @@ data("meuse")
 Next, set the coordinates for the data and extract the $X$ matrix of locations and the $Y$ the log of observed zinc concentrations,
 ```{r,eval=TRUE,include=TRUE}
 meuse.train <- meuse.all[1:155, ]
-meuse.valid <- meuse.all[156:164, c("x", "y")]
+meuse.valid <- meuse.all[156:164, ]
 coordinates(meuse.train) <- ~ x + y
 coordinates(meuse.valid) <- ~ x + y
 ```

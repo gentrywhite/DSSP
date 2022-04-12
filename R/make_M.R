@@ -30,8 +30,7 @@ tps.rbf <- function(x, is.even) {
 #' This function creates the precision matrix for the spatial prior based on thin-plate splines 
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
-#' @param intercept_only binary argument indicating whether covariates are excluded from the model.
-#' @param p the number of parameters in the model.
+#' @param covariates the observed values for the covariates (including intercept).
 #' @keywords spatial prior, thin-plate splines
 #' @return A list containing the precision matrix M and the object M.eigen containing 
 #' eigenvalues and eigenvectors for the matrix M.
@@ -49,13 +48,16 @@ tps.rbf <- function(x, is.even) {
 #' coordinates(meuse.all) <- ~ x + y
 #' X <- scale(coordinates(meuse.all))
 #' make.M(X)
-make.M <- function(X, intercept_only = TRUE, p = NULL) {
+make.M <- function(X, covariates) {
+  if(missing(covariates)){
+    covariates <- matrix(rep(1,nrow(X)), ncol=1)
+  }
   X <- as.matrix(X)
   n <- nrow(X)
   dimX <- ncol(X)
   even <- dimX %% 2 == 0
   deg <- trunc(dimX / 2 + 1) - 1
-  Tmat <- cbind(1, stats::poly(X, degree = deg, raw = TRUE))
+  Tmat <- cbind(covariates, stats::poly(X, degree = deg, raw = TRUE))
   d <- ncol(Tmat)
   D <- as.matrix(stats::dist(X))
   ind0 <- D != 0
@@ -73,12 +75,7 @@ make.M <- function(X, intercept_only = TRUE, p = NULL) {
   G.inv <- qr.solve(G)
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
-  if(!intercept_only) {
-    M2 <- matrix(0, nrow=dim(M)[1] + p, ncol=dim(M)[2] + p)
-    M2[(p+1):(dim(M2)[1]), (p+1):(dim(M2)[2])] <- M
-    M <- M2
-  }
   M <- as.matrix(Matrix::forceSymmetric(M))
   M.eigen <- eigen(M, symmetric = TRUE)
-  list(M = M, M.eigen = M.eigen)
+  list(M = M, M.eigen = M.eigen, G.inv = G.inv)
 }

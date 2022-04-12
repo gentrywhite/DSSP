@@ -75,19 +75,8 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   )
   x <- stats::model.matrix(mt, mf)
 
-  if (attr(x, "assign")[1] == 0 & dim(x)[2] == 1) {
-    # if model is y ~ 1: x is just the coordinates and old version of DSSP can be run
-    x <- w
-    intercept_only <- TRUE
-  } else {
-    # use both covariates and coordinates for model fitting
-    intercept_only <- FALSE
-    p <- ncol(x)
-    message("Currently only works for intercept only models: formula=y~1")
-  }
-
   N <- as.integer(N)
-  X <- as.matrix(x)
+  X <- as.matrix(w)
   Y <- as.numeric(y)
   n <- length(y)
   pars <- as.numeric(pars)
@@ -100,7 +89,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   ND <- n - d
 
   ##  Compute M
-  M.list <- make.M(X, intercept_only = intercept_only, p = p) ##  Only Needs to return the eigenvalues and vectors
+  M.list <- make.M(X, covariates = x) ##  Only Needs to return the eigenvalues and vectors
   M <- M.list$M
 
   EV <- M.list$M.eigen$values
@@ -116,13 +105,20 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   out <- list(eta = eta, delta = delta)
   if (fitted.values) {
     nu <- sample.nu(Y, eta, delta, EV, V)
-    out <- append(out, list(nu = nu, y_fitted = nu * y_scaling$scale + y_scaling$center))
+    out <- append(
+      out, 
+      list(
+        nu = nu, 
+        y_fitted = nu * y_scaling$scale + y_scaling$center,
+        covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% nu 
+      )
+    )
   }
   
   dssp.out <- 
     append(out, list(
       N = N, X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
-      coords = coords, formula = formula, intercept_only = intercept_only, nobs = nobs
+      coords = coords, formula = formula, covariates=x, nobs = nobs
     ))
   class(dssp.out) <- "dsspMod"
   dssp.out
@@ -138,7 +134,7 @@ residuals.dsspMod <- function(object, newdata, robust, ...) {
     if("y_fitted" %in% names(object)) {
       y_fitted <- object$y_fitted
     } else {
-      m <- make.M(object$X, intercept_only = object$intercept_only)
+      m <- make.M(object$X, covariates = object$covariates)
       nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
       y_fitted <- nu * object$y_scaling$scale + object$y_scaling$center
     }

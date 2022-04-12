@@ -18,7 +18,7 @@
 predict.dsspMod <- function(object, newdata, ...) {
   if (missing(newdata)) {
     if("y_fitted" %in% names(object)) return(object$y_fitted)
-    m <- make.M(object$X, intercept_only = object$intercept_only)
+    m <- make.M(object$X, covariates = object$covariates)
     nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
     return(nu * object$y_scaling$scale + object$y_scaling$center)
   } 
@@ -29,11 +29,8 @@ predict.dsspMod <- function(object, newdata, ...) {
   if (any(!grepl("scaled", names(attributes(w.pred))))) {
     w.pred <- scale(w.pred, center = object$coord_scaling$center, scale = object$coord_scaling$scale)
   }
-  if (object$intercept_only) {
-    newdata <- w.pred
-  }
   
-  x <- object$X
+  X <- object$X
   y <- object$Y
   eta <- object$eta
   delta <- object$delta
@@ -41,17 +38,23 @@ predict.dsspMod <- function(object, newdata, ...) {
   if ("nu" %in% names(object)) {
     nu <- object$nu
   } else {
-    m <- make.M(x, intercept_only = object$intercept_only)
+    m <- make.M(X, covariates = object$covariates)
     nu <- sample.nu(y, eta, delta, m$M.eigen$values, m$M.eigen$vectors)
   }
+  
+  mt <- stats::terms(object$formula, data = newdata)
+  mf <- stats::lm(object$formula, data = newdata, method = "model.frame")
+  new_x <- stats::model.matrix(mt, mf)
+  
+  
   N <- length(eta)
   n <- length(y)
-  X <- rbind(x, newdata)
+  X <- rbind(X, w.pred)
   m <- nrow(X) - n
   Y <- c(y, rep(0, m))
   
   ##  Make augmented M matrix
-  M.list <- make.M(X, intercept_only = object$intercept_only)
+  M.list <- make.M(X, covariates = rbind(object$covariates, new_x))
   
   ##  Extract Vectors
   v <- M.list$M.eigen$vectors

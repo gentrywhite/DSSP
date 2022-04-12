@@ -4,14 +4,12 @@
 \alias{make.M}
 \title{Precision Matrix Function}
 \usage{
-make.M(X, intercept_only = TRUE, p = NULL)
+make.M(X, covariates)
 }
 \arguments{
 \item{X}{a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.}
 
-\item{intercept_only}{binary argument indicating whether covariates are excluded from the model.}
-
-\item{p}{the number of parameters in the model.}
+\item{covariates}{the observed values for the covariates (including intercept).}
 }
 \value{
 A list containing the precision matrix M and the object M.eigen containing 
