@@ -51,10 +51,14 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
       `q0.975` = function(x) stats::quantile(x, probs=0.975),
       max = max
     ))
-    
+    if(nrow(object$covariates_posterior)==1){
+      cov_list_names <- "(Intercept)"
+    } else {
+      cov_list_names <- rownames(object$covariates_posterior)
+    }
     cov_list <- stats::setNames(
       split(object$covariates_posterior, seq(nrow(object$covariates_posterior))),
-      rownames(object$covariates_posterior)
+      cov_list_names
     )
     
     cov_summary <- lapply(cov_measures, function(m) sapply(cov_list, function(v) m(v)))
