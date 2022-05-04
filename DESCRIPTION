@@ -13,7 +13,6 @@ Encoding: UTF-8
 RoxygenNote: 7.1.2
 Imports: 
     Rcpp,
-    Matrix,
     rust,
     sp,
     posterior,

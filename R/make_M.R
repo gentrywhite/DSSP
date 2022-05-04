@@ -75,7 +75,6 @@ make.M <- function(X, covariates) {
   G.inv <- qr.solve(G)
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
-  M <- as.matrix(Matrix::forceSymmetric(M))
   M.eigen <- eigen(M, symmetric = TRUE)
   list(M = M, M.eigen = M.eigen, G.inv = G.inv)
 }
