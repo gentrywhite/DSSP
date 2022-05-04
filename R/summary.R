@@ -7,9 +7,6 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
   probs <- validate_ci_bounds(prob)
   
   variables <- list(eta=object$eta, delta=object$delta)
-  if(!is.null(object$nu)) {
-    variables$nu = object$nu
-  }
   
   measures <- list()
   if (robust) {
@@ -51,18 +48,26 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
       `q0.975` = function(x) stats::quantile(x, probs=0.975),
       max = max
     ))
-    if(nrow(object$covariates_posterior)==1){
-      cov_list_names <- "(Intercept)"
-    } else {
-      cov_list_names <- rownames(object$covariates_posterior)
-    }
-    cov_list <- stats::setNames(
-      split(object$covariates_posterior, seq(nrow(object$covariates_posterior))),
-      cov_list_names
-    )
     
-    cov_summary <- lapply(cov_measures, function(m) sapply(cov_list, function(v) m(v)))
-    cov_summary <- as.data.frame(cov_summary)
+    n_covariates <- nrow(object$covariates_posterior)
+    if(n_covariates == 1){
+      # intercept only
+      cov_summary <- NULL
+    } else {
+      posterior <- object$covariates_posterior
+      
+      # remove intercept from summary
+      posterior <- subset(posterior, rownames(posterior) != "(Intercept)")
+      cov_list_names <- rownames(posterior)
+      
+      cov_list <- stats::setNames(
+        split(posterior, seq(nrow(posterior))),
+        cov_list_names
+      )
+      cov_summary <- lapply(cov_measures, function(m) sapply(cov_list, function(v) m(v)))
+      cov_summary <- as.data.frame(cov_summary)
+    }
+    
     out <- c(out, list(cov_summary=cov_summary))
   }
   class(out) <- "dsspModsummary"
