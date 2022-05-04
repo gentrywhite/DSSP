@@ -47,7 +47,6 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
   
   if (all(class(data) != "SpatialPointsDataFrame")) {
     sp::coordinates(data) <- coords
-    coords <- sp::coordinates(data)
   } else {
     if (!is.null(coords)) message("obtaining spatial coordinates from data; ignoring coords provided")
     coords <- sp::coordinates(data)
