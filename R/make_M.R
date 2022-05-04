@@ -60,7 +60,6 @@ make.M <- function(X, covariates) {
   Tmat <- cbind(covariates, stats::poly(X, degree = deg, raw = TRUE))
   d <- ncol(Tmat)
   D <- as.matrix(stats::dist(X))
-  D <- D/max(D)
   ind0 <- D != 0
   K <- D
   K[ind0] <- tps.rbf(D[ind0], even)
