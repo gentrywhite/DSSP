@@ -60,11 +60,10 @@ make.M <- function(X, covariates) {
   Tmat <- cbind(covariates, stats::poly(X, degree = deg, raw = TRUE))
   d <- ncol(Tmat)
   D <- as.matrix(stats::dist(X))
+  D <- D/max(D)
   ind0 <- D != 0
   K <- D
   K[ind0] <- tps.rbf(D[ind0], even)
-  Kstar <- D
-  Kstar[ind0] <- D[ind0]^2 * log(D[ind0])
   TT <- tcrossprod(Tmat, Tmat)
   F.mat <- eigen(TT, symmetric = TRUE)
   F2 <- F.mat$vectors[, -c(1:d)]
@@ -76,5 +75,5 @@ make.M <- function(X, covariates) {
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
   M.eigen <- eigen(M, symmetric = TRUE)
-  list(M = M, M.eigen = M.eigen, G.inv = G.inv)
+  list(M = M, M.eigen = M.eigen, G.inv = G.inv,G = G)
 }
