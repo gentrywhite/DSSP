@@ -41,3 +41,11 @@ test_that("predictions are good", {
   expect_true(mean((Y.true - Y.pred)^2) < 20000)
   expect_true(cor(Y.pred, Y.true) > 0.8)
 })
+
+test_that("summary runs without errors", {
+  expect_true(class(summary(meuse.fit))=="dsspModsummary")
+})
+
+test_that("plot runs without errors", {
+  expect_output(plot(meuse.fit), regexp = NA)
+})
