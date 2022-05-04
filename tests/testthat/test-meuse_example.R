@@ -45,7 +45,3 @@ test_that("predictions are good", {
 test_that("summary runs without errors", {
   expect_true(class(summary(meuse.fit))=="dsspModsummary")
 })
-
-test_that("plot runs without errors", {
-  expect_output(plot(meuse.fit), regexp = NA)
-})
