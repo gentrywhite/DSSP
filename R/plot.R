@@ -3,7 +3,7 @@ plot.dsspMod <- function(x,
                          panel=if(add.smooth) panel.smooth else points,
                          add.smooth=getOption("add.smooth"),
                          contour_plots=TRUE,
-                         nx=100, ny=100, cols=hcl.colors(10, "YlOrRd"), nlevels=5,
+                         nx=100, ny=100, pal=heat.colors, nlevels=5,
                          ...){
   if (!inherits(x, "dsspMod"))	stop("use only with \"dsspMod\" objects")
   
@@ -46,7 +46,7 @@ plot.dsspMod <- function(x,
     dev.flush()
     title("Contour and filled contour plots", outer = T, line=-2)
     dev.hold()
-    filled.contour2(interp_y)
+    filled.contour2(interp_y, color.palette=pal)
     dev.flush()
   }
   invisible()
