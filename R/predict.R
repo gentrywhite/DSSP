@@ -12,15 +12,12 @@
 #' sp::coordinates(meuse.all) <- ~ x + y
 #' meuse.fit <- DSSP(
 #'     formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 1000, function(x) -2 * log(1 + x),
-#'     fitted.values = TRUE, pars = c(0.001, 0.001)
+#'     pars = c(0.001, 0.001)
 #' )
 #' preds <- predict(meuse.fit, meuse.all[156:164, ])
 predict.dsspMod <- function(object, newdata, ...) {
   if (missing(newdata)) {
-    if("y_fitted" %in% names(object)) return(object$y_fitted)
-    m <- make.M(object$X, covariates = object$covariates)
-    nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
-    return(nu * object$y_scaling$scale + object$y_scaling$center)
+    return(object$y_fitted)
   } 
   if (!any(class(newdata) %in% c("SpatialPointsDataFrame", "SpatialPoints"))) {
     sp::coordinates(newdata) <- object$coords
@@ -34,18 +31,11 @@ predict.dsspMod <- function(object, newdata, ...) {
   y <- object$Y
   eta <- object$eta
   delta <- object$delta
-  
-  if ("nu" %in% names(object)) {
-    nu <- object$nu
-  } else {
-    m <- make.M(X, covariates = object$covariates)
-    nu <- sample.nu(y, eta, delta, m$M.eigen$values, m$M.eigen$vectors)
-  }
+  nu <- object$nu
   
   mt <- stats::terms(object$formula, data = newdata)
   mf <- stats::lm(object$formula, data = newdata, method = "model.frame")
   new_x <- stats::model.matrix(mt, mf)
-  
   
   N <- length(eta)
   n <- length(y)

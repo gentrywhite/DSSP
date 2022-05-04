@@ -13,7 +13,6 @@
 #' @param pars a vector of the prior shape and rate parameters for the inverse-gamma 
 #' prior distribution of delta, the variance parameter for the Gaussian likelihood.
 #' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
-#' @param fitted.values return a matrix containing samples of the fitted values at each location X, defaults to \code{FALSE}.
 #' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.
 #' @keywords spatial prior, thin-plate splines
 #' @return A list containing N samples of nu, eta, delta, and the original data X and Y.
@@ -41,9 +40,9 @@
 #' ## Draw 100 samples from the posterior of eta given the data y.
 #' OUTPUT <- DSSP(
 #'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
-#'   pars = c(0.001, 0.001), log_prior = f, fitted.values = FALSE
+#'   pars = c(0.001, 0.001), log_prior = f
 #' )
-DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values = FALSE, coords = NULL) {
+DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL) {
   stopifnot(is.function(log_prior))
   
   if (all(class(data) != "SpatialPointsDataFrame")) {
@@ -99,27 +98,29 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, fitted.values
   ## sample eta
   eta <- sample.eta(N, ND, EV, Q, log_prior, UL = 1000)
 
-  ##  sample delta_0
+  ##  sample delta
   delta <- sample.delta(eta, ND, EV, Q, pars)
-
-  out <- list(eta = eta, delta = delta)
-  if (fitted.values) {
-    nu <- sample.nu(Y, eta, delta, EV, V)
-    out <- append(
-      out, 
-      list(
-        nu = nu, 
-        y_fitted = nu * y_scaling$scale + y_scaling$center,
-        covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% nu 
-      )
-    )
-  }
   
-  dssp.out <- 
-    append(out, list(
-      N = N, X = X, Y = Y, y_scaling = y_scaling, coord_scaling = coord_scaling,
-      coords = coords, formula = formula, covariates=x, nobs = nobs
-    ))
+  ## sample nu
+  nu <- sample.nu(Y, eta, delta, EV, V)
+  
+  dssp.out <- list(
+    eta = eta,
+    delta = delta,
+    nu = nu, 
+    y_fitted = nu * y_scaling$scale + y_scaling$center,
+    covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% nu,
+    N = N,
+    X = X,
+    Y = Y,
+    y_scaling = y_scaling,
+    coord_scaling = coord_scaling,
+    coords = coords, 
+    formula = formula, 
+    covariates = x,
+    nobs = nobs
+  )
+
   class(dssp.out) <- "dsspMod"
   dssp.out
 }
@@ -131,13 +132,7 @@ print.dsspMod <- function(x, ...) {
 
 residuals.dsspMod <- function(object, newdata, robust, ...) {
   if (missing(newdata)) {
-    if("y_fitted" %in% names(object)) {
-      y_fitted <- object$y_fitted
-    } else {
-      m <- make.M(object$X, covariates = object$covariates)
-      nu <- sample.nu(object$Y, object$eta, object$delta, m$M.eigen$values, m$M.eigen$vectors)
-      y_fitted <- nu * object$y_scaling$scale + object$y_scaling$center
-    }
+    y_fitted <- object$y_fitted
     y <- object$Y * object$y_scaling$scale + object$y_scaling$center
   } else {
     y_fitted <- predict.dsspMod(object, newdata=newdata)

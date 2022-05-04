@@ -101,8 +101,7 @@ Next, we select the number of samples to draw and invoke the function DSSP().
 N <- 10000 ## number of samples to draw from the DSSP model
 meuse.fit <- DSSP(
   formula = log(zinc) ~ 1, data = meuse.train, N = N, 
-  pars = c(0.001, 0.001), log_prior = function(x) -2 * log(1 + x), 
-  fitted.values = TRUE
+  pars = c(0.001, 0.001), log_prior = function(x) -2 * log(1 + x)
 )
 
 ETA <- meuse.fit$eta

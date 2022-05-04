@@ -3,7 +3,7 @@ data("meuse.all", package = "gstat")
 test_that("fitting model with coords specified work", {
   m <- DSSP(
     formula = log(zinc) ~ 1, data = meuse.all, N = 1000, function(x) -2 * log(1 + x),
-    fitted.values = TRUE, pars = c(0.001, 0.001), coords = ~ x + y
+    pars = c(0.001, 0.001), coords = ~ x + y
   )
   expect_true(class(m) == "dsspMod")
 })
@@ -15,7 +15,7 @@ N <- 1000
 test_that("fitting model work", {
   meuse.fit <<- DSSP(
     formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = N, function(x) -2 * log(1 + x),
-    fitted.values = TRUE, pars = c(0.001, 0.001)
+    pars = c(0.001, 0.001)
   )
   ETA <<- meuse.fit$eta
   expect_true(is.numeric(ETA))
