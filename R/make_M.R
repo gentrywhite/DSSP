@@ -56,7 +56,7 @@ make.M <- function(X, covariates) {
   n <- nrow(X)
   dimX <- ncol(X)
   even <- dimX %% 2 == 0
-  deg <- trunc(dimX / 2 + 1)
+  deg <- trunc(dimX / 2 + 1)-1
   Tmat <- cbind(covariates, stats::poly(X, degree = deg, raw = TRUE))
   d <- ncol(Tmat)
   D <- as.matrix(stats::dist(X))
