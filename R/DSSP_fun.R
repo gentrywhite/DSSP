@@ -104,13 +104,14 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
   
   ## sample nu
   nu <- sample.nu(Y, eta, delta, EV, V)
+  y_fitted <- nu * y_scaling$scale + y_scaling$center
   
   dssp.out <- list(
     eta = eta,
     delta = delta,
     nu = nu, 
-    y_fitted = nu * y_scaling$scale + y_scaling$center,
-    covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% nu,
+    y_fitted = y_fitted,
+    covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% y_fitted,
     N = N,
     X = X,
     Y = Y,
