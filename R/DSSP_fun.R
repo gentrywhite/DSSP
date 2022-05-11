@@ -111,7 +111,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
     delta = delta,
     nu = nu, 
     y_fitted = y_fitted,
-    covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% y_fitted,
+    covariates_posterior = M.list$G.inv[1:ncol(x), , drop=FALSE] %*% y_fitted,
     N = N,
     X = X,
     Y = Y,

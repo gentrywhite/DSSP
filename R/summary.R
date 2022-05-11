@@ -1,9 +1,4 @@
 summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, ...) {
-  out <- list(
-    formula = object$formula,
-    nobs = object$nobs,
-    niter = object$N
-  )
   probs <- validate_ci_bounds(prob)
   
   variables <- list(eta=object$eta, delta=object$delta)
@@ -37,39 +32,34 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
   names(full_summary)[which(names(full_summary) %in% c("ll", "ul"))] <- paste0(c("l-", "u-"), prob * 100, "% CI")
   rownames(full_summary) <- names(variables)
   
-  out <- c(out, list(full_summary=full_summary))
-  if(!is.null(object$covariates_posterior)){
-    cov_measures <- c(measures, list(
-      min = min,
-      `q0.025` = function(x) stats::quantile(x, probs=0.025),
-      `q0.25` = function(x) stats::quantile(x, probs=0.25),
-      `q0.50` = function(x) stats::quantile(x, probs=0.50),
-      `q0.75` = function(x) stats::quantile(x, probs=0.75),
-      `q0.975` = function(x) stats::quantile(x, probs=0.975),
-      max = max
-    ))
-    
-    n_covariates <- nrow(object$covariates_posterior)
-    if(n_covariates == 1){
-      # intercept only
-      cov_summary <- NULL
-    } else {
-      posterior <- object$covariates_posterior
-      
-      # remove intercept from summary
-      posterior <- subset(posterior, rownames(posterior) != "(Intercept)")
-      cov_list_names <- rownames(posterior)
-      
-      cov_list <- stats::setNames(
-        split(posterior, seq(nrow(posterior))),
-        cov_list_names
-      )
-      cov_summary <- lapply(cov_measures, function(m) sapply(cov_list, function(v) m(v)))
-      cov_summary <- as.data.frame(cov_summary)
-    }
-    
-    out <- c(out, list(cov_summary=cov_summary))
-  }
+  cov_measures <- c(measures, list(
+    min = min,
+    `q0.025` = function(x) stats::quantile(x, probs=0.025),
+    `q0.25` = function(x) stats::quantile(x, probs=0.25),
+    `q0.50` = function(x) stats::quantile(x, probs=0.50),
+    `q0.75` = function(x) stats::quantile(x, probs=0.75),
+    `q0.975` = function(x) stats::quantile(x, probs=0.975),
+    max = max
+  ))
+  
+  n_covariates <- nrow(object$covariates_posterior)
+  posterior <- object$covariates_posterior
+  
+  cov_list <- stats::setNames(
+    split(posterior, seq(nrow(posterior))),
+    rownames(posterior)
+  )
+  cov_summary <- lapply(cov_measures, function(m) sapply(cov_list, function(v) m(v)))
+  cov_summary <- as.data.frame(cov_summary)
+  
+  out <- list(
+    formula = object$formula,
+    nobs = object$nobs,
+    niter = object$N,
+    full_summary=full_summary,
+    cov_summary=cov_summary
+  )
+  
   class(out) <- "dsspModsummary"
   out
 }
