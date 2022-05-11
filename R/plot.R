@@ -1,9 +1,9 @@
 plot.dsspMod <- function(x,
                          robust_residuals=TRUE,
-                         panel=if(add.smooth) panel.smooth else points,
+                         panel=if(add.smooth) graphics::panel.smooth else graphics::points,
                          add.smooth=getOption("add.smooth"),
                          contour_plots=TRUE,
-                         nx=100, ny=100, pal=heat.colors, nlevels=5,
+                         nx=100, ny=100, pal=grDevices::heat.colors, nlevels=5,
                          ...){
   if (!inherits(x, "dsspMod"))	stop("use only with \"dsspMod\" objects")
   
@@ -14,40 +14,40 @@ plot.dsspMod <- function(x,
   yh <- apply(ypred, 1, metric)
   y <- reverse_scaling(x$Y, x$y_scaling)
   
-  par(mfrow=c(2,2))
-  dev.hold()
+  graphics::par(mfrow=c(2,2))
+  grDevices::dev.hold()
   plot(yh, r, xlab = "Fitted values", ylab = "Residuals", ylim = ylim)
   panel(yh, r)
-  dev.flush()
+  grDevices::dev.flush()
   
-  dev.hold()
+  grDevices::dev.hold()
   plot(y, yh, xlab = "Actual", ylab = "Predicted", ylim=range(yh))
-  abline(0,1)
-  dev.flush()
+  graphics::abline(0,1)
+  grDevices::dev.flush()
   
-  dev.hold()
+  grDevices::dev.hold()
   plot(stats::density(x$eta), 
        main = expression("Posterior Density of " * eta),
        xlab = expression(eta), ylab = "Posterior density")
-  dev.flush()
+  grDevices::dev.flush()
   
-  dev.hold()
+  grDevices::dev.hold()
   plot(stats::density(x$delta), 
        main = expression("Posterior Density of " * delta),
        xlab = expression(delta), ylab = "Posterior density")
-  dev.flush()
+  grDevices::dev.flush()
   
   if(contour_plots){
-    par(mfrow=c(1,2))
+    graphics::par(mfrow=c(1,2))
     interp_y <- akima::interp(x$coords[,1], x$coords[,2], y, nx=nx, ny=ny)
     
-    dev.hold()
-    contour(interp_y)
-    dev.flush()
-    title("Contour and filled contour plots", outer = T, line=-2)
-    dev.hold()
+    grDevices::dev.hold()
+    graphics::contour(interp_y)
+    grDevices::dev.flush()
+    graphics::title("Contour and filled contour plots", outer = T, line=-2)
+    grDevices::dev.hold()
     filled.contour2(interp_y, color.palette=pal)
-    dev.flush()
+    grDevices::dev.flush()
   }
   invisible()
 }
@@ -59,7 +59,7 @@ filled.contour2 <-function (x = seq(0, 1, length.out = nrow(z)),
                             ylim = range(y, finite = TRUE), 
                             zlim = range(z, finite = TRUE), 
                             levels = pretty(zlim, nlevels), nlevels = 20,
-                            color.palette = heat.colors, 
+                            color.palette = grDevices::heat.colors, 
                             col = color.palette(length(levels) - 1), plot.title,
                             plot.axes, key.title, key.axes, asp = NA,
                             xaxs = "i", yaxs = "i", las = 1, axes = TRUE, 
@@ -88,31 +88,31 @@ filled.contour2 <-function (x = seq(0, 1, length.out = nrow(z)),
     }
     if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
       stop("increasing 'x' and 'y' values expected")
-    mar.orig <- (par.orig <- par(c("mar", "las", "mfrow")))$mar
-    on.exit(par(par.orig))
-    w <- (3 + mar.orig[2]) * par("csi") * 2.54
-    par(las = las)
+    mar.orig <- (par.orig <- graphics::par(c("mar", "las", "mfrow")))$mar
+    on.exit(graphics::par(par.orig))
+    w <- (3 + mar.orig[2]) * graphics::par("csi") * 2.54
+    graphics::par(las = las)
     mar <- mar.orig
-    plot.new()
-    par(mar=mar)
-    plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
+    graphics::plot.new()
+    graphics::par(mar=mar)
+    graphics::plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
     if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
       stop("no proper 'z' matrix specified")
     if (!is.double(z)) 
       storage.mode(z) <- "double"
-    .filled.contour(as.double(x), as.double(y), z, as.double(levels), col = col)
+    graphics::.filled.contour(as.double(x), as.double(y), z, as.double(levels), col = col)
     if (missing(plot.axes)) {
       if (axes) {
-        title(main = "", xlab = "", ylab = "")
-        Axis(x, side = 1)
-        Axis(y, side = 2)
+        graphics::title(main = "", xlab = "", ylab = "")
+        graphics::Axis(x, side = 1)
+        graphics::Axis(y, side = 2)
       }
     }
     else plot.axes
     if (frame.plot) 
-      box()
+      graphics::box()
     if (missing(plot.title)) 
-      title(...)
+      graphics::title(...)
     else plot.title
     invisible()
   }
