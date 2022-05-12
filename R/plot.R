@@ -1,12 +1,45 @@
+#' Diagnostic, Density and Contour Plots
+#'
+#' @param x an object of class \code{dsspMod}
+#' @param robust_residuals whether to use robust residuals (median of predicted).
+#'   Default to be \code{TRUE}.
+#' @param add.smooth whether or not to add smooth line to residuals plot.
+#'   Defaults to \code{getOption"add.smooth"}.
+#' @param contour_plots whether or not to return a second panel with contour plots.
+#'   Defaults to \code{TRUE}
+#' @param nx dimension of output grid in x direction.
+#'   Used for interpolation (\code{akime::interp()}). 
+#' @param ny dimension of output grid in y direction.
+#'   Used for interpolation (\code{akime::interp()}). 
+#' @param pal colour palette used for filled contour plot.
+#' @param nlevels number of levels used in contour plots.
+#' @param ... additional arguments which are ignored.
+#'
+#' @return NULL
+#' @export 
+#'
+#' @examples
+#' library(sp)
+#' library(gstat)
+#' data(meuse.all)
+#' coordinates(meuse.all) <- ~ x + y
+#'
+#' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+#'
+#' ## Draw 100 samples from the posterior of eta given the data y.
+#' OUTPUT <- DSSP(
+#'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
+#'   pars = c(0.001, 0.001), log_prior = f
+#' )
+#' plot(OUTPUT)
 plot.dsspMod <- function(x,
                          robust_residuals=TRUE,
-                         panel=if(add.smooth) graphics::panel.smooth else graphics::points,
                          add.smooth=getOption("add.smooth"),
                          contour_plots=TRUE,
                          nx=100, ny=100, pal=grDevices::heat.colors, nlevels=5,
                          ...){
   if (!inherits(x, "dsspMod"))	stop("use only with \"dsspMod\" objects")
-  
+  panel <- if(add.smooth) graphics::panel.smooth else graphics::points
   r <- residuals.dsspMod(x, robust=robust_residuals)
   ylim <- range(r)
   ypred <- predict.dsspMod(x)
@@ -42,11 +75,11 @@ plot.dsspMod <- function(x,
     interp_y <- akima::interp(x$coords[,1], x$coords[,2], y, nx=nx, ny=ny)
     
     grDevices::dev.hold()
-    graphics::contour(interp_y)
+    graphics::contour(interp_y, nlevels=nlevels)
     grDevices::dev.flush()
     graphics::title("Contour and filled contour plots", outer = T, line=-2)
     grDevices::dev.hold()
-    filled.contour2(interp_y, color.palette=pal)
+    filled.contour2(interp_y, color.palette=pal, nlevels=nlevels)
     grDevices::dev.flush()
   }
   invisible()
@@ -58,7 +91,7 @@ filled.contour2 <-function (x = seq(0, 1, length.out = nrow(z)),
                             z, xlim = range(x, finite = TRUE), 
                             ylim = range(y, finite = TRUE), 
                             zlim = range(z, finite = TRUE), 
-                            levels = pretty(zlim, nlevels), nlevels = 20,
+                            levels = pretty(zlim, nlevels), nlevels = 5,
                             color.palette = grDevices::heat.colors, 
                             col = color.palette(length(levels) - 1), plot.title,
                             plot.axes, key.title, key.axes, asp = NA,
