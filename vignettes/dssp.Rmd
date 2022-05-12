@@ -14,10 +14,6 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-library(sp)
-library(gstat)
-library(mvnfast)
-library(rust)
 ```
 
 ## Introduction
@@ -78,6 +74,8 @@ The example here uses the Meuse River data set from the package 'sp'. First star
 
 
 ```{r setup}
+library(sp)
+library(gstat)
 library(DSSP)
 library(ggplot2)
 

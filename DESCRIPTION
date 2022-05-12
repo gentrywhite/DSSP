@@ -20,7 +20,6 @@ Imports:
 Suggests: 
     knitr,
     ggplot2,
-    mvnfast,
     gstat,
     rmarkdown,
     testthat (>= 3.0.0)
