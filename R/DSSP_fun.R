@@ -128,11 +128,36 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
 }
 
 print.dsspMod <- function(x, ...) {
-  # temporary print method for model object
+  # print model summary
   print(summary(x, ...))
 }
 
-residuals.dsspMod <- function(object, newdata, robust, ...) {
+#' Get residuals from \code{dsspMod} model
+#'
+#' @param object an object of class \code{dsspMod}
+#' @param newdata a data frame for which to estimate residuals.
+#' @param robust whether or not to use median (rather than mean) of posterior 
+#'   density to as estimate calculate residuals.
+#' @param ... additional arguments which are ignored.
+#'
+#' @return vector containing residuals with same length as rows in data used.
+#' @export
+#'
+#' @examples
+#' library(sp)
+#' library(gstat)
+#' data(meuse.all)
+#' coordinates(meuse.all) <- ~ x + y
+#'
+#' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+#'
+#' ## Draw 100 samples from the posterior of eta given the data y.
+#' OUTPUT <- DSSP(
+#'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
+#'   pars = c(0.001, 0.001), log_prior = f
+#' )
+#' residuals(OUTPUT)
+residuals.dsspMod <- function(object, newdata, robust=TRUE, ...) {
   if (missing(newdata)) {
     y_fitted <- object$y_fitted
     y <- object$Y * object$y_scaling$scale + object$y_scaling$center
