@@ -1,3 +1,32 @@
+#' Summarise a \code{dsspMod} model
+#'
+#' @param object an object of class \code{dsspMod}
+#' @param prob the desired probability to be covered by the credible intervals.
+#'   The default is 0.95.
+#' @param robust whether or not to use the median (rather than the mean) to 
+#'   calculate the estimates that summarise the posterior. 
+#'   Default to \code{FALSE}.
+#' @param mc_se whether or not to include the uncertainty in \code{Estimate}
+#'   caused by sampling should be shown in the summary. Defaults to \code{FALSE}.
+#' @param ... additional arguments which are ignored.
+#'
+#' @return NULL
+#' @export 
+#'
+#' @examples
+#' library(sp)
+#' library(gstat)
+#' data(meuse.all)
+#' coordinates(meuse.all) <- ~ x + y
+#'
+#' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+#'
+#' ## Draw 100 samples from the posterior of eta given the data y.
+#' OUTPUT <- DSSP(
+#'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
+#'   pars = c(0.001, 0.001), log_prior = f
+#' )
+#' summary(OUTPUT)
 summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, ...) {
   probs <- validate_ci_bounds(prob)
   
