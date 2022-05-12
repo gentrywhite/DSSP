@@ -8,7 +8,7 @@ Maintainer: Gentry White <gentry.white@qut.edu.au>
 URL: http://github.com/gentrywhite/DSSP
 BugReport: http://github.com/gentrywhite/DSSP/issues
 Description: This package contains the functions necessary to draw samples from the direct sampling spatial prior model (DSSP) in White et. al. 2019.  The basic model assumes a Gaussian likelihood and derives a spatial prior based on thin-plate splines.  Functions are included so that the model can be extended to be used for generalised linear mixed models or Bayesian Hierarchical Models. 
-License: GPL (>= 2)
+License: GPL (>= 3)
 Encoding: UTF-8
 RoxygenNote: 7.1.2
 Imports: 
