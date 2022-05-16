@@ -3,7 +3,7 @@ Type: Package
 Title: Implementation of the Direct Sampling Spatial Prior
 Version: 0.0.0.9000
 Date: 2022-01-19
-Author: Gentry White
+Authors@R: c(person("Gentry", "White", email="gentry.white@qut.edu.au", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-1170-9299")), person("Rex", "Parsons", email="rex.parsons94@gmail.com", role="aut", comment=c(ORCID="0000-0002-6053-8174")))
 Maintainer: Gentry White <gentry.white@qut.edu.au>
 URL: http://github.com/gentrywhite/DSSP
 BugReport: http://github.com/gentrywhite/DSSP/issues
