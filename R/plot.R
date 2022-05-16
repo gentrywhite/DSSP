@@ -47,7 +47,33 @@ plot.dsspMod <- function(x,
   yh <- apply(ypred, 1, metric)
   y <- reverse_scaling(x$Y, x$y_scaling)
   
-  graphics::par(mfrow=c(2,2))
+  old_pars <- par(no.readonly = TRUE)
+  on.exit(par(old_pars), add = TRUE)
+  
+  title_height <- 0.4
+  plot_height <- 1.25
+  mar_x <- 4
+  mar_y <- 0.7
+  
+  if(contour_plots){
+    mar_x <- 4
+    mar_y <- 0.7
+    par(mar=c(mar_x, mar_x, mar_y, mar_y))
+    layout(
+      matrix(c(1,2,4,5,7,8,1,3,4,6,7,9),ncol=2),
+      heights=rep(c(title_height,plot_height), 3)
+    )
+  } else {
+    mar_x <- 2
+    mar_y <- 0.7
+    layout(
+      matrix(c(1,2,4,5,1,3,4,6),ncol=2),
+      heights=rep(c(title_height,plot_height), 2)
+    )
+  }
+  
+  plot.new()
+  text(0.5,0.5,"first title",cex=2,font=2)
   grDevices::dev.hold()
   plot(yh, r, xlab = "Fitted values", ylab = "Residuals", ylim = ylim)
   panel(yh, r)
@@ -57,7 +83,8 @@ plot.dsspMod <- function(x,
   plot(y, yh, xlab = "Actual", ylab = "Predicted", ylim=range(yh))
   graphics::abline(0,1)
   grDevices::dev.flush()
-  
+  plot.new()
+  text(0.5,0.5,"Second title",cex=2,font=2)
   grDevices::dev.hold()
   plot(stats::density(x$eta), 
        main = expression("Posterior Density of " * eta),
@@ -71,13 +98,14 @@ plot.dsspMod <- function(x,
   grDevices::dev.flush()
   
   if(contour_plots){
-    graphics::par(mfrow=c(1,2))
     interp_y <- akima::interp(x$coords[,1], x$coords[,2], y, nx=nx, ny=ny)
-    
+    plot.new()
+    text(0.5,0.5,"third title",cex=2,font=2)
     grDevices::dev.hold()
     graphics::contour(interp_y, nlevels=nlevels)
     grDevices::dev.flush()
-    graphics::title("Contour and filled contour plots", outer = T, line=-2)
+    
+    # graphics::title("Contour and filled contour plots", outer = T, line=-2)
     grDevices::dev.hold()
     filled.contour2(interp_y, color.palette=pal, nlevels=nlevels)
     grDevices::dev.flush()
