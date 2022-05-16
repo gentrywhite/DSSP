@@ -67,6 +67,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
   mt <- stats::terms(formula, data = data)
   mf <- stats::lm(formula, data = data, method = "model.frame")
   nobs <- nrow(stats::na.omit(mf))
+  dep_var <- names(mf)[[1]]
   y <- stats::model.extract(mf, "response")
   y <- scale(y)
   y_scaling <- list(
@@ -120,7 +121,8 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
     coords = coords, 
     formula = formula, 
     covariates = x,
-    nobs = nobs
+    nobs = nobs,
+    dep_var = dep_var
   )
 
   class(dssp.out) <- "dsspMod"

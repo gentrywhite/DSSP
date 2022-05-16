@@ -3,8 +3,6 @@
 #' @param x an object of class \code{dsspMod}
 #' @param robust_residuals whether to use robust residuals (median of predicted).
 #'   Default to be \code{TRUE}.
-#' @param add.smooth whether or not to add smooth line to residuals plot.
-#'   Defaults to \code{getOption"add.smooth"}.
 #' @param contour_plots whether or not to return a second panel with contour plots.
 #'   Defaults to \code{TRUE}
 #' @param nx dimension of output grid in x direction.
@@ -13,7 +11,7 @@
 #'   Used for interpolation (\code{akime::interp()}). 
 #' @param pal colour palette used for filled contour plot.
 #' @param nlevels number of levels used in contour plots.
-#' @param ... additional arguments which are ignored.
+#' @param ... additional arguments that are passed to \code{ggplot2::scale_fill_distiller()}.
 #'
 #' @return NULL
 #' @export 
@@ -34,12 +32,10 @@
 #' plot(OUTPUT)
 plot.dsspMod <- function(x,
                          robust_residuals=TRUE,
-                         add.smooth=getOption("add.smooth"),
                          contour_plots=TRUE,
-                         nx=100, ny=100, pal=grDevices::heat.colors, nlevels=5,
+                         nx=100, ny=100, nlevels=5,
                          ...){
   if (!inherits(x, "dsspMod"))	stop("use only with \"dsspMod\" objects")
-  panel <- if(add.smooth) graphics::panel.smooth else graphics::points
   r <- residuals.dsspMod(x, robust=robust_residuals)
   ylim <- range(r)
   ypred <- predict.dsspMod(x)
@@ -47,133 +43,115 @@ plot.dsspMod <- function(x,
   yh <- apply(ypred, 1, metric)
   y <- reverse_scaling(x$Y, x$y_scaling)
   
-  old_pars <- par(no.readonly = TRUE)
-  on.exit(par(old_pars), add = TRUE)
+  df_params <- data.frame(eta=x$eta, delta=x$delta)
+  df_params$n <- seq.int(nrow(df_params))
   
-  title_height <- 0.4
-  plot_height <- 1.25
-  mar_x <- 4
-  mar_y <- 0.7
+  resid_vs_fitted <- 
+    ggplot() +
+    geom_point(aes(x=yh, y=r)) +
+    geom_smooth(aes(x=yh, y=r), se=FALSE, col="black") +
+    labs(title="residuals vs fitted")
+
+  predicted_vs_actual <-
+    ggplot() +
+    geom_point(aes(y, yh)) +
+    geom_abline(slope=1, intercept=0) +
+    labs(title="predicted vs actual")
+
+  eta_density <- 
+    ggplot() +
+    geom_density(aes(x$eta)) +
+    labs(title=expression("Posterior Density of " * eta), x=expression(eta))
   
-  if(contour_plots){
-    mar_x <- 4
-    mar_y <- 0.7
-    par(mar=c(mar_x, mar_x, mar_y, mar_y))
-    layout(
-      matrix(c(1,2,4,5,7,8,1,3,4,6,7,9),ncol=2),
-      heights=rep(c(title_height,plot_height), 3)
-    )
-  } else {
-    mar_x <- 2
-    mar_y <- 0.7
-    layout(
-      matrix(c(1,2,4,5,1,3,4,6),ncol=2),
-      heights=rep(c(title_height,plot_height), 2)
-    )
-  }
+  eta_trace <-
+    ggplot(data=df_params) +
+    geom_line(aes(x=n, y=eta)) +
+    labs(title=expression(eta * " traceplot"), y=expression(eta))
   
-  plot.new()
-  text(0.5,0.5,"first title",cex=2,font=2)
-  grDevices::dev.hold()
-  plot(yh, r, xlab = "Fitted values", ylab = "Residuals", ylim = ylim)
-  panel(yh, r)
-  grDevices::dev.flush()
+  delta_density <-
+    ggplot() +
+    geom_density(aes(x$delta)) +
+    labs(title=expression("Posterior Density of " * delta), x=expression(delta))
   
-  grDevices::dev.hold()
-  plot(y, yh, xlab = "Actual", ylab = "Predicted", ylim=range(yh))
-  graphics::abline(0,1)
-  grDevices::dev.flush()
-  plot.new()
-  text(0.5,0.5,"Second title",cex=2,font=2)
-  grDevices::dev.hold()
-  plot(stats::density(x$eta), 
-       main = expression("Posterior Density of " * eta),
-       xlab = expression(eta), ylab = "Posterior density")
-  grDevices::dev.flush()
+  delta_trace <-
+    ggplot(data=df_params) +
+    geom_line(aes(x=n, y=delta)) +
+    labs(title=expression(delta * " traceplot"), y=expression(delta))
   
-  grDevices::dev.hold()
-  plot(stats::density(x$delta), 
-       main = expression("Posterior Density of " * delta),
-       xlab = expression(delta), ylab = "Posterior density")
-  grDevices::dev.flush()
+  diagnostic_plots <- list(
+    resid_vs_fitted=resid_vs_fitted,
+    predicted_vs_actual=predicted_vs_actual,
+    eta_density=eta_density,
+    eta_trace=eta_trace,
+    delta_density=delta_density,
+    delta_trace=delta_trace
+  )
   
   if(contour_plots){
     interp_y <- akima::interp(x$coords[,1], x$coords[,2], y, nx=nx, ny=ny)
-    plot.new()
-    text(0.5,0.5,"third title",cex=2,font=2)
-    grDevices::dev.hold()
-    graphics::contour(interp_y, nlevels=nlevels)
-    grDevices::dev.flush()
+    interp_df <- na.omit(as.data.frame(akima::interp2xyz(interp_y)))
     
-    # graphics::title("Contour and filled contour plots", outer = T, line=-2)
-    grDevices::dev.hold()
-    filled.contour2(interp_y, color.palette=pal, nlevels=nlevels)
-    grDevices::dev.flush()
+    contour <- 
+      ggplot(data=interp_df, aes(x=x, y=y, z=z)) +
+      geom_contour(col="black", bins=nlevels) +
+      labs(
+        x=colnames(x$coords)[1],
+        y=colnames(x$coords)[2],
+        title="contour plot"
+      )
+    
+    filled_contour <- 
+      ggplot(data=interp_df, aes(x=x, y=y, fill=z)) +
+      geom_tile() + 
+      scale_fill_distiller(...) +
+      labs(
+        x=colnames(x$coords)[1],
+        y=colnames(x$coords)[2],
+        title="filled contour plot",
+        fill=x$dep_var
+      ) +
+      theme(legend.position = "bottom")
+    
+    legend <- cowplot::get_legend(filled_contour)
+    filled_contour_no_legend <- filled_contour + theme(legend.position = "none")
+    
+    diagnostic_plots_grid <- c(
+      diagnostic_plots, 
+      list(contour=contour, filled_contour=filled_contour_no_legend)
+    )
+    
+    diagnostic_plots_return <- c(
+      diagnostic_plots, list(contour=contour, filled_contour=filled_contour)
+    )
+    
+    plots <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
+    grid1 <- cowplot::plot_grid(plots, legend, rel_heights=c(1,0.12), ncol=1)
+    return(grid1)
+  } else {
+    diagnostic_plots_grid <- diagnostic_plots_return <- diagnostic_plots
+    grid1 <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
+    return(grid1)
   }
-  invisible()
+  
 }
 
 
-filled.contour2 <-function (x = seq(0, 1, length.out = nrow(z)),
-                            y = seq(0, 1, length.out = ncol(z)), 
-                            z, xlim = range(x, finite = TRUE), 
-                            ylim = range(y, finite = TRUE), 
-                            zlim = range(z, finite = TRUE), 
-                            levels = pretty(zlim, nlevels), nlevels = 5,
-                            color.palette = grDevices::heat.colors, 
-                            col = color.palette(length(levels) - 1), plot.title,
-                            plot.axes, key.title, key.axes, asp = NA,
-                            xaxs = "i", yaxs = "i", las = 1, axes = TRUE, 
-                            frame.plot = axes, mar, ...) 
-  {
-    # taken from here: https://www.cbr.washington.edu/qerm/index.php/R/Contour_Plots
-    # modification by Ian Taylor of the filled.contour function
-    # to remove the key and facilitate overplotting with contour()
-    if (missing(z)) {
-      if (!missing(x)) {
-        if (is.list(x)) {
-          z <- x$z
-          y <- x$y
-          x <- x$x
-        }
-        else {
-          z <- x
-          x <- seq.int(0, 1, length.out = nrow(z))
-        }
-      }
-      else stop("no 'z' matrix specified")
-    }
-    else if (is.list(x)) {
-      y <- x$y
-      x <- x$x
-    }
-    if (any(diff(x) <= 0) || any(diff(y) <= 0)) 
-      stop("increasing 'x' and 'y' values expected")
-    mar.orig <- (par.orig <- graphics::par(c("mar", "las", "mfrow")))$mar
-    on.exit(graphics::par(par.orig))
-    w <- (3 + mar.orig[2]) * graphics::par("csi") * 2.54
-    graphics::par(las = las)
-    mar <- mar.orig
-    graphics::plot.new()
-    graphics::par(mar=mar)
-    graphics::plot.window(xlim, ylim, "", xaxs = xaxs, yaxs = yaxs, asp = asp)
-    if (!is.matrix(z) || nrow(z) <= 1 || ncol(z) <= 1) 
-      stop("no proper 'z' matrix specified")
-    if (!is.double(z)) 
-      storage.mode(z) <- "double"
-    graphics::.filled.contour(as.double(x), as.double(y), z, as.double(levels), col = col)
-    if (missing(plot.axes)) {
-      if (axes) {
-        graphics::title(main = "", xlab = "", ylab = "")
-        graphics::Axis(x, side = 1)
-        graphics::Axis(y, side = 2)
-      }
-    }
-    else plot.axes
-    if (frame.plot) 
-      graphics::box()
-    if (missing(plot.title)) 
-      graphics::title(...)
-    else plot.title
-    invisible()
-  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
