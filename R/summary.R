@@ -49,7 +49,6 @@ summary.dsspMod <- function(object, prob = 0.95, robust = FALSE, mc_se = FALSE, 
   full_summary_measures <- c(measures, list(
     ll = function(x) stats::quantile(x, probs=probs[1]),
     ul = function(x) stats:: quantile(x, probs=probs[2]),
-    Rhat = posterior::rhat,
     ESS = ess
   ))
   
