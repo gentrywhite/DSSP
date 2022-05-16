@@ -7,11 +7,9 @@
 \method{plot}{dsspMod}(
   x,
   robust_residuals = TRUE,
-  add.smooth = getOption("add.smooth"),
   contour_plots = TRUE,
   nx = 100,
   ny = 100,
-  pal = grDevices::heat.colors,
   nlevels = 5,
   ...
 )
@@ -22,9 +20,6 @@
 \item{robust_residuals}{whether to use robust residuals (median of predicted).
 Default to be \code{TRUE}.}
 
-\item{add.smooth}{whether or not to add smooth line to residuals plot.
-Defaults to \code{getOption"add.smooth"}.}
-
 \item{contour_plots}{whether or not to return a second panel with contour plots.
 Defaults to \code{TRUE}}
 
@@ -34,11 +29,9 @@ Used for interpolation (\code{akime::interp()}).}
 \item{ny}{dimension of output grid in y direction.
 Used for interpolation (\code{akime::interp()}).}
 
-\item{pal}{colour palette used for filled contour plot.}
+\item{nlevels}{number of levels used in contour plot.}
 
-\item{nlevels}{number of levels used in contour plots.}
-
-\item{...}{additional arguments which are ignored.}
+\item{...}{additional arguments that are passed to \code{ggplot2::scale_fill_distiller()}.}
 }
 \description{
 Diagnostic, Density and Contour Plots
