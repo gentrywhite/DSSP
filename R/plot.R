@@ -50,13 +50,21 @@ plot.dsspMod <- function(x,
     ggplot() +
     geom_point(aes(x=yh, y=r)) +
     geom_smooth(aes(x=yh, y=r), se=FALSE, col="black") +
-    labs(title="residuals vs fitted")
+    labs(
+      title="Residuals vs fitted values",
+      x=paste("fitted", x$dep_var),
+      y="residuals"
+    )
 
   predicted_vs_actual <-
     ggplot() +
     geom_point(aes(y, yh)) +
     geom_abline(slope=1, intercept=0) +
-    labs(title="predicted vs actual")
+    labs(
+      title="Observe vs fitted values",
+      x=paste("observed", x$dep_var),
+      y=paste("fitted", x$dep_var)
+    )
 
   eta_density <- 
     ggplot() +
@@ -66,7 +74,7 @@ plot.dsspMod <- function(x,
   eta_trace <-
     ggplot(data=df_params) +
     geom_line(aes(x=n, y=eta)) +
-    labs(title=expression(eta * " traceplot"), y=expression(eta))
+    labs(title=expression("Traceplot of " * eta), y=expression(eta))
   
   delta_density <-
     ggplot() +
@@ -76,7 +84,7 @@ plot.dsspMod <- function(x,
   delta_trace <-
     ggplot(data=df_params) +
     geom_line(aes(x=n, y=delta)) +
-    labs(title=expression(delta * " traceplot"), y=expression(delta))
+    labs(title=expression("Traceplot of " * delta), y=expression(delta))
   
   diagnostic_plots <- list(
     resid_vs_fitted=resid_vs_fitted,
@@ -97,7 +105,7 @@ plot.dsspMod <- function(x,
       labs(
         x=colnames(x$coords)[1],
         y=colnames(x$coords)[2],
-        title="contour plot"
+        title="Contour plot"
       )
     
     filled_contour <- 
@@ -107,7 +115,7 @@ plot.dsspMod <- function(x,
       labs(
         x=colnames(x$coords)[1],
         y=colnames(x$coords)[2],
-        title="filled contour plot",
+        title="Filled contour plot",
         fill=x$dep_var
       ) +
       theme(legend.position = "bottom")
@@ -126,12 +134,44 @@ plot.dsspMod <- function(x,
     
     plots <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
     grid1 <- cowplot::plot_grid(plots, legend, rel_heights=c(1,0.12), ncol=1)
-    return(grid1)
   } else {
     diagnostic_plots_grid <- diagnostic_plots_return <- diagnostic_plots
     grid1 <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
-    return(grid1)
   }
+  print(grid1)
+  
+  covariates_plots <- list()
+  for(i in 1:nrow(x$covariates_posterior)) {
+    cov_name <- rownames(x$covariates_posterior)[i]
+    df_i <- data.frame(values=x$covariates_posterior[i,])
+    df_i$n <- seq.int(nrow(df_i))
+    
+    trace_plot <- 
+      ggplot(data=df_i, aes(x=n, y=values)) +
+      geom_line() +
+      labs(y=cov_name)
+    
+    density_plot <- 
+      ggplot(data=df_i) +
+      geom_density(aes(x=values)) +
+      labs(x=cov_name)
+    
+    new_plots <- list(density_plot=density_plot, trace_plot=trace_plot)
+    names(new_plots) <- paste(cov_name, names(new_plots), sep="_")
+    
+    covariates_plots <- c(covariates_plots, new_plots)
+  }
+  grid2 <- cowplot::plot_grid(plotlist=covariates_plots, ncol=2)
+  print(grid2)
+  
+  res <- list(
+    diagnostic_plots = diagnostic_plots_return,
+    covariates_plots = covariates_plots,
+    diagnostic_grid = grid1,
+    covariates_grid = grid2
+  )
+  return(invisible(res))
+  
   
 }
 
