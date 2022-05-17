@@ -49,7 +49,3 @@ ETA <- sample.eta(100, ND, EV, Q, f, UL = 1000)
 DELTA <- sample.delta(ETA, ND, EV, Q, pars = c(0.001, 0.001))
 NU <- sample.nu(Y, ETA, DELTA, EV, V)
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

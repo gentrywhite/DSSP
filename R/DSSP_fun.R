@@ -14,7 +14,6 @@
 #' prior distribution of delta, the variance parameter for the Gaussian likelihood.
 #' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
 #' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.
-#' @keywords spatial prior, thin-plate splines
 #' @return A list containing N samples of nu, eta, delta, and the original data X and Y.
 #' @details
 #'  The direct sampling spatial prior model assumes that the spatial model can be written

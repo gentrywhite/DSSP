@@ -51,7 +51,3 @@ f <- function(x) -x ## log-prior for exponential distribution for the smoothing 
 ## Draw 100 samples from the posterior of eta given the data y.
 sample.eta(100, ND, EV, Q, UL = 1000, f)
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

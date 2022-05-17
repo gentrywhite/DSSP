@@ -3,7 +3,6 @@
 #' Function to compute the thin-plate splines radial basis function for internal use by the function make.M().
 #' @param x is a Euclidean distance between two points.
 #' @param is.even is a logical argument indicating TRUE if the dimension of the space where the thin-plate spline smoother is being fitted is even.
-#' @keywords thin-plate spline basis function
 #' @return The resulting value of the thin-plate spline radial basis function.
 #' @details This function computes the thin-plate spline radial basis function depending on the if d is odd or even.
 #' @export
@@ -31,7 +30,6 @@ tps.rbf <- function(x, is.even) {
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
 #' @param covariates the observed values for the covariates (including intercept).
-#' @keywords spatial prior, thin-plate splines
 #' @return A list containing the precision matrix M and the object M.eigen containing 
 #' eigenvalues and eigenvectors for the matrix M.
 #' @details The M matrix is the precision matrix for the

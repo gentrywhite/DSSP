@@ -28,7 +28,7 @@
 #'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
 #'   pars = c(0.001, 0.001), log_prior = f
 #' )
-#' plot(OUTPUT)
+#' plot(OUTPUT, contour_plots=FALSE)
 plot.dsspMod <- function(x,
                          robust_residuals=TRUE,
                          contour_plots=TRUE,

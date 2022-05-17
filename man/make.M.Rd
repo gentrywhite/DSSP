@@ -35,7 +35,3 @@ coordinates(meuse.all) <- ~ x + y
 X <- scale(coordinates(meuse.all))
 make.M(X)
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

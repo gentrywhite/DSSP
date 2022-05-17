@@ -33,6 +33,9 @@ Used for interpolation (\code{akime::interp()}).}
 
 \item{...}{additional arguments that are passed to \code{ggplot2::scale_fill_distiller()}.}
 }
+\value{
+a list containing the plots printed (individually and together in grid)
+}
 \description{
 Diagnostic, Density and Contour Plots
 }

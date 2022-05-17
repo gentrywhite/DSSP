@@ -59,7 +59,3 @@ OUTPUT <- DSSP(
   pars = c(0.001, 0.001), log_prior = f
 )
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

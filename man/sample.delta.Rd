@@ -67,7 +67,3 @@ DELTA <- sample.delta(ETA, ND, EV, Q, pars = c(0.001, 0.001))
 ##   return(delta)
 ## }
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}
