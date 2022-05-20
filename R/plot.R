@@ -40,7 +40,7 @@ plot.dsspMod <- function(x,
     stop("'ggplot2' is required for generating plots")
   }
   
-  if(requireNamespace("cowplot", quietly=TRUE)) {
+  if(!requireNamespace("cowplot", quietly=TRUE)) {
     message("'cowplot' is required for arranging plots into a grid.\nPlots will be returned individually.\n\n")
     make_grid <- FALSE
   } else {
