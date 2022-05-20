@@ -35,6 +35,23 @@ plot.dsspMod <- function(x,
                          nx=100, ny=100, nlevels=5,
                          ...){
   if (!inherits(x, "dsspMod"))	stop("use only with \"dsspMod\" objects")
+  
+  if(!requireNamespace("ggplot2", quietly=TRUE)) {
+    stop("'ggplot2' is required for generating plots")
+  }
+  
+  if(requireNamespace("cowplot", quietly=TRUE)) {
+    message("'cowplot' is required for arranging plots into a grid.\nPlots will be returned individually.\n\n")
+    make_grid <- FALSE
+  } else {
+    make_grid <- TRUE
+  }
+  
+  if(!requireNamespace("akima", quietly=TRUE) & contour_plots) {
+    message("'akima' is required for making contour plots but isn't installed.\nSkipping contour plots.\n\n")
+    contour_plots <- FALSE
+  }
+  
   r <- residuals.dsspMod(x, robust=robust_residuals)
   ylim <- range(r)
   ypred <- predict.dsspMod(x)
@@ -119,7 +136,11 @@ plot.dsspMod <- function(x,
       ) +
       ggplot2::theme(legend.position = "bottom")
     
-    legend <- cowplot::get_legend(filled_contour)
+    
+    diagnostic_plots_return <- c(
+      diagnostic_plots, list(contour=contour, filled_contour=filled_contour)
+    )
+    
     filled_contour_no_legend <- filled_contour + ggplot2::theme(legend.position = "none")
     
     diagnostic_plots_grid <- c(
@@ -127,17 +148,17 @@ plot.dsspMod <- function(x,
       list(contour=contour, filled_contour=filled_contour_no_legend)
     )
     
-    diagnostic_plots_return <- c(
-      diagnostic_plots, list(contour=contour, filled_contour=filled_contour)
-    )
-    
-    plots <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
-    diagnostic_grid <- cowplot::plot_grid(plots, legend, rel_heights=c(1,0.12), ncol=1)
-  } else {
+    if(make_grid){
+      plots <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
+      legend <- cowplot::get_legend(filled_contour)
+      diagnostic_grid <- cowplot::plot_grid(plots, legend, rel_heights=c(1,0.12), ncol=1)
+      print(diagnostic_grid)
+    }
+  } else if(make_grid){
     diagnostic_plots_grid <- diagnostic_plots_return <- diagnostic_plots
     diagnostic_grid <- cowplot::plot_grid(plotlist=diagnostic_plots_grid, ncol=2)
+    print(diagnostic_grid)
   }
-  print(diagnostic_grid)
   
   covariates_plots <- list()
   for(i in 1:nrow(x$covariates_posterior)) {
@@ -160,15 +181,25 @@ plot.dsspMod <- function(x,
     
     covariates_plots <- c(covariates_plots, new_plots)
   }
-  covariates_grid <- cowplot::plot_grid(plotlist=covariates_plots, ncol=2)
-  print(covariates_grid)
   
-  res <- list(
-    diagnostic_plots = diagnostic_plots_return,
-    covariates_plots = covariates_plots,
-    diagnostic_grid = diagnostic_grid,
-    covariates_grid = covariates_grid
-  )
+  if(make_grid) {
+    covariates_grid <- cowplot::plot_grid(plotlist=covariates_plots, ncol=2)
+    print(covariates_grid)
+    res <- list(
+      diagnostic_plots = diagnostic_plots_return,
+      covariates_plots = covariates_plots,
+      diagnostic_grid = diagnostic_grid,
+      covariates_grid = covariates_grid
+    )
+  } else {
+    for(gg in c(diagnostic_plots_return, covariates_plots)) {
+      print(gg)
+    }
+    res <- list(
+      diagnostic_plots = diagnostic_plots_return,
+      covariates_plots = covariates_plots
+    )
+  }
   
   invisible(res)
 }
