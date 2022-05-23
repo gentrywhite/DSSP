@@ -24,15 +24,11 @@ prior distribution of delta, the variance parameter for the Gaussian likelihood.
 A list containing N samples of nu, eta, delta, and the original data X and Y.
 }
 \description{
-does some DSSP stuff
-
 This function samples from the log-posterior of all parameters in the model and returns a list
    object containing the samples. It performs a few compatibility checks on the inputs, then
    calls the sample.eta(), sample.delta(), and sample.nu().
 }
 \details{
-DSSP R Functions
-
 The direct sampling spatial prior model assumes that the spatial model can be written
  as the likelihood parameterised with mean vector nu and variance delta
  \deqn{(y | nu, delta) ~ N(nu, delta * I)}

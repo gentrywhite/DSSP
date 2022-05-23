@@ -1,7 +1,5 @@
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
-
 ##  DSSP (Direct Sampling Spatial Prior)
-
 #' Wrapper function to draw samples from the Direct Sampling Spatial Prior (DSSP) model
 #'
 #' This function samples from the log-posterior of all parameters in the model and returns a list

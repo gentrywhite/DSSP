@@ -4,7 +4,6 @@
 using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.sample_nu_cpp)]]
-
 arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   // Read in the data Y, eta, delta,EV,V
   arma::vec Y = Rcpp::as<arma::vec>(x);
@@ -38,4 +37,3 @@ arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   }
   return SAMPLES.t();
 }
-

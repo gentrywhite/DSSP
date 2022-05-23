@@ -4,7 +4,6 @@
 using namespace Rcpp;
 // [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.sample_delta_cpp)]]
-
 arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   // Read in the data eta,nd,EV,Q,PARS
   // Where V~Ga(0.5*nd,1), then beta/V~IGa(0.5*nd,beta)
@@ -30,4 +29,3 @@ arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
   }
   return Y;
 }
-
