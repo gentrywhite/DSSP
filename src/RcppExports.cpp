@@ -23,17 +23,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// make_M
-Rcpp::List make_M(const Rcpp::NumericMatrix& x);
-RcppExport SEXP _DSSP_make_M(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(make_M(x));
-    return rcpp_result_gen;
-END_RCPP
-}
 // sample_delta_cpp
 arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars);
 RcppExport SEXP _DSSP_sample_delta_cpp(SEXP xSEXP, SEXP parsSEXP) {
@@ -72,7 +61,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_DSSP_eta_post_cpp", (DL_FUNC) &_DSSP_eta_post_cpp, 2},
-    {"_DSSP_make_M", (DL_FUNC) &_DSSP_make_M, 1},
     {"_DSSP_sample_delta_cpp", (DL_FUNC) &_DSSP_sample_delta_cpp, 2},
     {"_DSSP_sample_nu_cpp", (DL_FUNC) &_DSSP_sample_nu_cpp, 2},
     {"_DSSP_sample_y_pred_cpp", (DL_FUNC) &_DSSP_sample_y_pred_cpp, 1},

@@ -1,23 +1,11 @@
-#include<math.h>
-#include<cmath>
+#include <math.h>
+#include <cmath>
 #include <RcppArmadillo.h>
 using namespace Rcpp;
-//[[Rcpp::depends(RcppArmadillo)]]
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
-
+// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.sample_nu_cpp)]]
 
-arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
-{
+arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   // Read in the data Y, eta, delta,EV,V
   arma::vec Y = Rcpp::as<arma::vec>(x);
   arma::vec ETA = Rcpp::as<arma::vec>(pars["eta"]);
@@ -38,16 +26,15 @@ arma::mat sample_nu_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
   arma::mat LAMBDA(M,M,arma::fill::zeros);
   arma::mat LAMBDASQRT(M,M,arma::fill::zeros);
   arma::vec LAMBDA_DIAG(M,arma::fill::zeros);
-  for(int i = 0; i < N; ++i)
-  {
-	LAMBDA_DIAG = arma::vec(1/(1+ETA[i]*EV));
+  for(int i = 0; i < N; ++i) {
+    Rcpp::checkUserInterrupt();
+	  LAMBDA_DIAG = arma::vec(1/(1+ETA[i]*EV));
     LAMBDA = arma::diagmat(LAMBDA_DIAG);
     LAMBDASQRT = arma::diagmat(sqrt(DELTA[i]*LAMBDA_DIAG));
     s = S.row(i);
     MU = s*LAMBDASQRT;
     R = MU.t()+LAMBDA*tVy;
     SAMPLES.row(i) = trans(V*R);
-
   }
   return SAMPLES.t();
 }

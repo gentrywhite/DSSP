@@ -5,10 +5,6 @@
     .Call(`_DSSP_eta_post_cpp`, x, pars)
 }
 
-.make_M <- function(x) {
-    .Call(`_DSSP_make_M`, x)
-}
-
 .sample_delta_cpp <- function(x, pars) {
     .Call(`_DSSP_sample_delta_cpp`, x, pars)
 }

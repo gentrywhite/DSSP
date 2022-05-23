@@ -52,5 +52,5 @@ OUTPUT <- DSSP(
   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
   pars = c(0.001, 0.001), log_prior = f
 )
-plot(OUTPUT)
+plot(OUTPUT, contour_plots=FALSE)
 }

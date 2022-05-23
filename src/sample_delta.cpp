@@ -1,23 +1,11 @@
-#include<math.h>
-#include<cmath>
+#include <math.h>
+#include <cmath>
 #include <RcppArmadillo.h>
 using namespace Rcpp;
-//[[Rcpp::depends(RcppArmadillo)]]
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
-
+// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.sample_delta_cpp)]]
 
-arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
-{
+arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   // Read in the data eta,nd,EV,Q,PARS
   // Where V~Ga(0.5*nd,1), then beta/V~IGa(0.5*nd,beta)
   arma::vec ETA = Rcpp::as<arma::vec>(x);
@@ -33,8 +21,8 @@ arma::vec sample_delta_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
   double BETA;
   arma::mat LAMBDA(M,M,arma::fill::zeros);
   arma::mat B(M,M,arma::fill::zeros);
-  for(int i = 0; i < N; ++i)
-  {
+  for(int i = 0; i < N; ++i) {
+    Rcpp::checkUserInterrupt();
     LAMBDA = arma::diagmat(1-1/(1+ETA[i]*EV));
     B = Q*LAMBDA*Q.t();
     BETA = arma::as_scalar(B)*0.5+PARS[1];
