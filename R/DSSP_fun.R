@@ -8,7 +8,7 @@
 #' @param formula a two sided linear formula with the response on left and the covariates on the right.
 #' @param data a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.
 #' @param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.
-#' @param pars a vector of the prior shape and rate parameters for the inverse-gamma 
+#' @param pars a vector of the prior shape and rate parameters for the inverse-gamma
 #' prior distribution of delta, the variance parameter for the Gaussian likelihood.
 #' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
 #' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.
@@ -39,9 +39,9 @@
 #'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
 #'   pars = c(0.001, 0.001), log_prior = f
 #' )
-DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL) {
+DSSP <- function(formula, data, N, pars, log_prior = function(x) -x, coords = NULL) {
   stopifnot(is.function(log_prior))
-  
+
   if (all(class(data) != "SpatialPointsDataFrame")) {
     sp::coordinates(data) <- coords
     coords <- sp::coordinates(data)
@@ -99,24 +99,24 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
 
   ##  sample delta
   delta <- sample.delta(eta, ND, EV, Q, pars)
-  
+
   ## sample nu
   nu <- sample.nu(Y, eta, delta, EV, V)
   y_fitted <- nu * y_scaling$scale + y_scaling$center
-  
+
   dssp.out <- list(
     eta = eta,
     delta = delta,
-    nu = nu, 
+    nu = nu,
     y_fitted = y_fitted,
-    covariates_posterior = M.list$G.inv[1:ncol(x), , drop=FALSE] %*% y_fitted,
+    covariates_posterior = M.list$G.inv[1:ncol(x), , drop = FALSE] %*% y_fitted,
     N = N,
     X = X,
     Y = Y,
     y_scaling = y_scaling,
     coord_scaling = coord_scaling,
-    coords = coords, 
-    formula = formula, 
+    coords = coords,
+    formula = formula,
     covariates = x,
     nobs = nobs,
     dep_var = dep_var
@@ -135,7 +135,7 @@ print.dsspMod <- function(x, ...) {
 #'
 #' @param object an object of class \code{dsspMod}
 #' @param newdata a data frame for which to estimate residuals.
-#' @param robust whether or not to use median (rather than mean) of posterior 
+#' @param robust whether or not to use median (rather than mean) of posterior
 #'   density to as estimate calculate residuals.
 #' @param ... additional arguments which are ignored.
 #'
@@ -156,17 +156,17 @@ print.dsspMod <- function(x, ...) {
 #'   pars = c(0.001, 0.001), log_prior = f
 #' )
 #' residuals(OUTPUT)
-residuals.dsspMod <- function(object, newdata, robust=TRUE, ...) {
+residuals.dsspMod <- function(object, newdata, robust = TRUE, ...) {
   if (missing(newdata)) {
     y_fitted <- object$y_fitted
     y <- object$Y * object$y_scaling$scale + object$y_scaling$center
   } else {
-    y_fitted <- predict.dsspMod(object, newdata=newdata)
+    y_fitted <- predict.dsspMod(object, newdata = newdata)
     mf <- stats::lm(object$formula, data = newdata, method = "model.frame")
     y <- stats::model.extract(mf, "response")
   }
-  
+
   metric <- ifelse(robust, stats::median, mean)
-  
+
   y - apply(y_fitted, 1, metric)
 }

@@ -6,7 +6,7 @@
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #' @param Q the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.
-#' @param UL the upper limit for the smoothing parameter value; used for the 
+#' @param UL the upper limit for the smoothing parameter value; used for the
 #' ratio-of-uniform sampler, default is 1000.
 #' @param log_prior a function of x evaluating the log of the prior density for eta
 #' @return N samples drawn from the posterior of eta given the data y \eqn{\pi(eta | y)}.
@@ -47,7 +47,7 @@ sample.eta <- function(N, ND, EV, Q, UL = 1000, log_prior) {
 #' @param ND the rank of the precision matrix, the default value is n-3 for spatial data.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function make.M().
 #' @param Q the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.
-#' @param pars a vector of the prior shape and rate parameters for the 
+#' @param pars a vector of the prior shape and rate parameters for the
 #' inverse-gamma prior distribution of delta.
 #' @return N samples drawn from the posterior of \eqn{\pi(delta | eta, y)}.
 #' @export
@@ -107,7 +107,7 @@ sample.delta <- function(eta, ND, EV, Q, pars) {
 #' @param delta samples of the variance parameter from the \code{sample.delta} function.
 #' @param EV eigenvalues of the precision matrix spatial prior from the function \code{make.M()}.
 #' @param V eigenvectors of the precision matrix spatial prior from the function \code{make.M()}.
-#' @return A matrix of samples with each column a random draw from the posterior 
+#' @return A matrix of samples with each column a random draw from the posterior
 #' of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
 #' @export
 #' @examples

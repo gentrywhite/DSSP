@@ -12,8 +12,8 @@
 \item{prob}{the desired probability to be covered by the credible intervals.
 The default is 0.95.}
 
-\item{robust}{whether or not to use the median (rather than the mean) to 
-calculate the estimates that summarise the posterior. 
+\item{robust}{whether or not to use the median (rather than the mean) to
+calculate the estimates that summarise the posterior.
 Default to \code{FALSE}.}
 
 \item{mc_se}{whether or not to include the uncertainty in \code{Estimate}

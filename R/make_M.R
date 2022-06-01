@@ -26,11 +26,11 @@ tps.rbf <- function(x, is.even) {
 
 #' Precision Matrix Function
 #'
-#' This function creates the precision matrix for the spatial prior based on thin-plate splines 
+#' This function creates the precision matrix for the spatial prior based on thin-plate splines
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
 #' @param covariates the observed values for the covariates (including intercept).
-#' @return A list containing the precision matrix M and the object M.eigen containing 
+#' @return A list containing the precision matrix M and the object M.eigen containing
 #' eigenvalues and eigenvectors for the matrix M.
 #' @details The M matrix is the precision matrix for the
 #'  spatial effects from the direct sampling spatial prior (DSSP) model. M is based on
@@ -47,14 +47,14 @@ tps.rbf <- function(x, is.even) {
 #' X <- scale(coordinates(meuse.all))
 #' make.M(X)
 make.M <- function(X, covariates) {
-  if(missing(covariates)){
-    covariates <- matrix(rep(1,nrow(X)), ncol=1)
+  if (missing(covariates)) {
+    covariates <- matrix(rep(1, nrow(X)), ncol = 1)
   }
   X <- as.matrix(X)
   n <- nrow(X)
   dimX <- ncol(X)
   even <- dimX %% 2 == 0
-  deg <- trunc(dimX / 2 + 1)-1
+  deg <- trunc(dimX / 2 + 1) - 1
   Tmat <- cbind(covariates, stats::poly(X, degree = deg, raw = TRUE))
   d <- ncol(Tmat)
   D <- as.matrix(stats::dist(X))
@@ -72,5 +72,5 @@ make.M <- function(X, covariates) {
   HG <- crossprod(H, G.inv)
   M <- crossprod(HG, G.inv)
   M.eigen <- eigen(M, symmetric = TRUE)
-  list(M = M, M.eigen = M.eigen, G.inv = G.inv,G = G)
+  list(M = M, M.eigen = M.eigen, G.inv = G.inv, G = G)
 }

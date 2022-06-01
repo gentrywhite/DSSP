@@ -13,7 +13,7 @@ DSSP(formula, data, N, pars, log_prior = function(x) -x, coords = NULL)
 
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.}
 
-\item{pars}{a vector of the prior shape and rate parameters for the inverse-gamma 
+\item{pars}{a vector of the prior shape and rate parameters for the inverse-gamma
 prior distribution of delta, the variance parameter for the Gaussian likelihood.}
 
 \item{log_prior}{a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.}

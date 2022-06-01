@@ -43,5 +43,5 @@ test_that("predictions are good", {
 })
 
 test_that("summary runs without errors", {
-  expect_true(class(summary(meuse.fit))=="dsspModsummary")
+  expect_true(class(summary(meuse.fit)) == "dsspModsummary")
 })

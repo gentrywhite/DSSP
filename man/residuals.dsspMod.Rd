@@ -11,7 +11,7 @@
 
 \item{newdata}{a data frame for which to estimate residuals.}
 
-\item{robust}{whether or not to use median (rather than mean) of posterior 
+\item{robust}{whether or not to use median (rather than mean) of posterior
 density to as estimate calculate residuals.}
 
 \item{...}{additional arguments which are ignored.}
