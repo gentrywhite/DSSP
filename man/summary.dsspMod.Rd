@@ -21,6 +21,9 @@ caused by sampling should be shown in the summary. Defaults to \code{FALSE}.}
 
 \item{...}{additional arguments which are ignored.}
 }
+\value{
+An object of class "dsspModsummary". Provides a summary of the the Direct Sampling Spatial Prior (DSSP) model. Includes details of the formula used to fit the model, and a summary of the model (\eqn{eta, delta}) and the covariates.
+}
 \description{
 Summarise a \code{dsspMod} model
 }

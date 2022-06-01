@@ -64,7 +64,7 @@ which can be sampled directly in sequence to create a draw from the joint poster
 \[
 \pi\left(\mathbf{\nu},\delta_0,\eta|\mathbf{y}\right).
 \]
-This is the heart of what the function DSSP() does^[see White et.al. 2018 for details].
+This is the heart of what the function DSSP() does^[see G. White, D. Sun, P. Speckman (2019) <arXiv:1906.05575> for details].
 
 ## Example
 
