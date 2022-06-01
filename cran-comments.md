@@ -1,3 +1,10 @@
+## Resubmission.
+This is a resubmission. In this version I have:
+
+* Corrected the reference in the description of the DESCRIPTION file.
+* Added a description for `\value` in summary.dsspMod.Rd
+* Avoided modifying global environment in test files.
+
 ## R CMD check results
 There were no ERRORs or WARNINGs. 
 
