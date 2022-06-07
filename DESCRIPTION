@@ -1,7 +1,7 @@
 Type: Package
 Package: DSSP
 Title: Implementation of the Direct Sampling Spatial Prior
-Version: 0.1.0.9000
+Version: 0.1.1
 Date: 2022-05-17
 Authors@R: c(
     person("Gentry", "White", , "gentry.white@qut.edu.au", role = c("aut", "cre"),
