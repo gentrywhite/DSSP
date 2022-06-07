@@ -27,7 +27,7 @@ tps.rbf <- function(x, is.even) {
 
 #' Precision Matrix Function
 #'
-#' This function creates the precision matrix for the spatial prior based on thin-plate splines 
+#' This function creates the precision matrix M for the spatial prior based on thin-plate splines 
 #' and returns the matrix M, and its eigenvalues and eigenvectors
 #' @param X a matrix of spatial coordinates. It is recommended that the coordinates be scaled and centred.
 #' @param covariates the observed values for the covariates (including intercept).
@@ -36,7 +36,7 @@ tps.rbf <- function(x, is.even) {
 #' eigenvalues and eigenvectors for the matrix M.
 #' @details The M matrix is the precision matrix for the
 #'  spatial effects from the direct sampling spatial prior (DSSP) model. M is based on
-#'  thin plate splines basis functions, see White et. al. 2019 for more details on how the
+#'  thin plate splines basis functions, see the vignette for more details on how the
 #'  matrix M is constructed.
 #' @export
 #' @examples
