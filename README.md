@@ -6,7 +6,9 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/gentrywhite/DSSP/workflows/R-CMD-check/badge.svg)](https://github.com/gentrywhite/DSSP/actions)
-
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/last-month/DSSP)](https://www.r-pkg.org/pkg/DSSP)
+[![arXiv](https://img.shields.io/badge/arXiv-1906.05575-00ff00.svg)](https://arxiv.org/abs/1906.05575)
 <!-- badges: end -->
 
 The goal of DSSP is to draw samples from the direct sampling spatial
@@ -32,39 +34,43 @@ Short example using the Meuse dataset from the `{gstat}` package.
 
 ``` r
 data("meuse.all", package = "gstat")
-meuse.train <- meuse.all[1:155, ]
-meuse.valid <- meuse.all[156:164, c("x", "y")]
-sp::coordinates(meuse.train) <- ~ x + y
-sp::coordinates(meuse.valid) <- ~ x + y
+sp::coordinates(meuse.all) <- ~ x + y
 ```
 
-This model does not include any covariates.
+This model does includes two covariates and their posterior densities
+are summarised in the `summary()`
 
 ``` r
 library(DSSP)
 meuse.fit <- DSSP(
-  formula = log(zinc) ~ 1, data = meuse.train, N = 10000,
+  formula = log(zinc) ~ log(lead) + lime, data = meuse.all, N = 10000,
   pars = c(0.001, 0.001), log_prior = function(x) -2 * log(1 + x)
 )
+summary(meuse.fit)
+#> Formula: log(zinc) ~ log(lead) + lime
+#> Number of observations: 164
+#> Number of iterations: 10000
+#> 
+#> Summary of model:
+#>       Estimate Est.Error l-95% CI u-95% CI      ESS
+#> eta     334.14   1202.47     3.61  1897.49 10000.00
+#> delta     0.11      0.01     0.09     0.14 10000.00
+#> 
+#> Summary of covariates:
+#>             Estimate Est.Error  min q0.025 q0.25 q0.50 q0.75 q0.975  max
+#> (Intercept)     1.25      0.20 0.48   0.89  1.12  1.25  1.38   1.67 2.30
+#> log(lead)       0.96      0.04 0.84   0.89  0.94  0.96  0.99   1.03 1.10
+#> lime            0.24      0.05 0.03   0.14  0.20  0.24  0.27   0.34 0.43
 ```
 
-The fitted values are close to the actual values.
+We can inspect several plots for the model using `plot()`.
 
 ``` r
-library(ggplot2)
-Yhat <- rowMeans(exp(meuse.fit$y_fitted))
-Ytrue <- meuse.all$zinc[1:155]
-
-data.frame(Yhat = Yhat, Ytrue = Ytrue) |>
-  ggplot(aes(x = Yhat, y = Ytrue)) +
-  geom_point(size = 3) +
-  geom_abline(aes(intercept = 0, slope = 1)) +
-  labs(x = "Smoothed Values", y = "Observed Values", title = "Smoothed vs. Observed Values") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  theme_bw()
+plot(meuse.fit)
+#> `geom_smooth()` using formula 'y ~ x'
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
 
 ## Introduction
 

@@ -21,9 +21,9 @@ knitr::opts_chunk$set(
 # DSSP
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/gentrywhite/DSSP/workflows/R-CMD-check/badge.svg)](https://github.com/gentrywhite/DSSP/actions)
-
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/DSSP)](https://www.r-pkg.org/pkg/DSSP)
+[![arXiv](https://img.shields.io/badge/arXiv-1906.05575-00ff00.svg)](https://arxiv.org/abs/1906.05575)
 <!-- badges: end -->
 
 The goal of DSSP is to draw samples from the direct sampling spatial
@@ -38,7 +38,7 @@ Hierarchical Models.
 You can install the development version from
 [GitHub](https://github.com/) with:
 
-``` r
+```{r, eval=FALSE}
 # install.packages("devtools")
 devtools::install_github("gentrywhite/DSSP")
 ```
@@ -49,36 +49,22 @@ Short example using the Meuse dataset from the `{gstat}` package.
 
 ```{r example}
 data("meuse.all", package = "gstat")
-meuse.train <- meuse.all[1:155, ]
-meuse.valid <- meuse.all[156:164, c("x", "y")]
-sp::coordinates(meuse.train) <- ~ x + y
-sp::coordinates(meuse.valid) <- ~ x + y
+sp::coordinates(meuse.all) <- ~ x + y
 ```
 
-This model does not include any covariates.
-
+This model does includes two covariates and their posterior densities are summarised in the `summary()`
 ```{r}
 library(DSSP)
 meuse.fit <- DSSP(
-  formula = log(zinc) ~ 1, data = meuse.train, N = 10000,
+  formula = log(zinc) ~ log(lead) + lime, data = meuse.all, N = 10000,
   pars = c(0.001, 0.001), log_prior = function(x) -2 * log(1 + x)
 )
+summary(meuse.fit)
 ```
 
-The fitted values are close to the actual values.
-
-```{r}
-library(ggplot2)
-Yhat <- rowMeans(exp(meuse.fit$y_fitted))
-Ytrue <- meuse.all$zinc[1:155]
-
-data.frame(Yhat = Yhat, Ytrue = Ytrue) |>
-  ggplot(aes(x = Yhat, y = Ytrue)) +
-  geom_point(size = 3) +
-  geom_abline(aes(intercept = 0, slope = 1)) +
-  labs(x = "Smoothed Values", y = "Observed Values", title = "Smoothed vs. Observed Values") +
-  theme(plot.title = element_text(hjust = 0.5)) +
-  theme_bw()
+We can inspect several plots for the model using `plot()`.
+```{r, fig.height=7, fig.width=7}
+plot(meuse.fit)
 ```
 
 ## Introduction
