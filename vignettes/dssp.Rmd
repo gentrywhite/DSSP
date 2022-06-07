@@ -242,6 +242,11 @@ meuse.fit.covariates <- DSSP(
 summary(meuse.fit.covariates)
 ```
 
+`plot()` can be used to get several plots from the model.
+```{r, fig.height=7, fig.width=7}
+plot(meuse.fit.covariates)
+```
+
 The posterior density of the covariates (`covariates_posterior`) can be accessed directly from the `dsspMod` object.
 
 ```{r, fig.height=3, fig.width=3.475, fig.show='hold'}
