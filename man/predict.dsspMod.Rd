@@ -23,8 +23,8 @@ Predictions from a model with new data.
 data("meuse.all", package = "gstat")
 sp::coordinates(meuse.all) <- ~ x + y
 meuse.fit <- DSSP(
-    formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 1000, function(x) -2 * log(1 + x),
-    pars = c(0.001, 0.001)
+  formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = 100, function(x) -2 * log(1 + x),
+  pars = c(0.001, 0.001)
 )
 preds <- predict(meuse.fit, meuse.all[156:164, ])
 }

@@ -15,7 +15,7 @@ sample.delta(eta, ND, EV, Q, pars)
 
 \item{Q}{the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.}
 
-\item{pars}{a vector of the prior shape and rate parameters for the 
+\item{pars}{a vector of the prior shape and rate parameters for the
 inverse-gamma prior distribution of delta.}
 }
 \value{
@@ -67,7 +67,3 @@ DELTA <- sample.delta(ETA, ND, EV, Q, pars = c(0.001, 0.001))
 ##   return(delta)
 ## }
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

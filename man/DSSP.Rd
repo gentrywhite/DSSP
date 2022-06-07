@@ -13,7 +13,7 @@ DSSP(formula, data, N, pars, log_prior = function(x) -x, coords = NULL)
 
 \item{N}{is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.}
 
-\item{pars}{a vector of the prior shape and rate parameters for the inverse-gamma 
+\item{pars}{a vector of the prior shape and rate parameters for the inverse-gamma
 prior distribution of delta, the variance parameter for the Gaussian likelihood.}
 
 \item{log_prior}{a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.}
@@ -24,15 +24,11 @@ prior distribution of delta, the variance parameter for the Gaussian likelihood.
 A list containing N samples of nu, eta, delta, and the original data X and Y.
 }
 \description{
-does some DSSP stuff
-
 This function samples from the log-posterior of all parameters in the model and returns a list
    object containing the samples. It performs a few compatibility checks on the inputs, then
    calls the sample.eta(), sample.delta(), and sample.nu().
 }
 \details{
-DSSP R Functions
-
 The direct sampling spatial prior model assumes that the spatial model can be written
  as the likelihood parameterised with mean vector nu and variance delta
  \deqn{(y | nu, delta) ~ N(nu, delta * I)}
@@ -59,7 +55,3 @@ OUTPUT <- DSSP(
   pars = c(0.001, 0.001), log_prior = f
 )
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

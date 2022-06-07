@@ -31,7 +31,3 @@ X <- scale(coordinates(meuse.all))
 D <- as.matrix(dist(X))
 K <- tps.rbf(D, TRUE)
 }
-\keyword{basis}
-\keyword{function}
-\keyword{spline}
-\keyword{thin-plate}

@@ -11,17 +11,17 @@ test_that("fitting model with coords specified work", {
 sp::coordinates(meuse.all) <- ~ x + y
 N <- 1000
 
+meuse.fit <- DSSP(
+  formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = N, function(x) -2 * log(1 + x),
+  pars = c(0.001, 0.001)
+)
+ETA <- meuse.fit$eta
+DELTA <- meuse.fit$delta
+NU <- meuse.fit$nu
 
 test_that("fitting model work", {
-  meuse.fit <<- DSSP(
-    formula = log(zinc) ~ 1, data = meuse.all[1:155, ], N = N, function(x) -2 * log(1 + x),
-    pars = c(0.001, 0.001)
-  )
-  ETA <<- meuse.fit$eta
   expect_true(is.numeric(ETA))
-  DELTA <<- meuse.fit$delta
   expect_true(is.numeric(DELTA))
-  NU <<- meuse.fit$nu
   expect_true(is.numeric(NU))
 })
 
@@ -43,5 +43,5 @@ test_that("predictions are good", {
 })
 
 test_that("summary runs without errors", {
-  expect_true(class(summary(meuse.fit))=="dsspModsummary")
+  expect_true(class(summary(meuse.fit)) == "dsspModsummary")
 })

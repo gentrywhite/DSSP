@@ -1,34 +1,8 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
-//[[Rcpp::depends(RcppArmadillo)]]
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-/*
- * Need to incorporate the prior somehow, if possible to call as an external function,
- * or hard code as a Pareto prior when using Rcpp.
- *
- * Also need to include the IC bit as a parameter
- *
- * after sourcing this type: >ptr_name<-create_xptr("eta_post_cpp")
- *
- * then you can sample using
- *
- * rust::ru_rcpp(ptr_name,d = n = , etc.)
- *
- * experiments show that this is about 40-50 times faster.
- *
- */
-//
+// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.eta_post_cpp)]]
-double eta_post_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars)
-{
+double eta_post_cpp(const Rcpp::NumericVector& x, const Rcpp::List& pars) {
   // Read in the data
   arma::vec y = Rcpp::as<arma::vec>(x);
   double eta = arma::as_scalar(y);

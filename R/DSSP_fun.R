@@ -1,7 +1,5 @@
 ##  Wrapper function takes X,y,num_samples and prior for eta and returns samples from joint posterior
-
 ##  DSSP (Direct Sampling Spatial Prior)
-
 #' Wrapper function to draw samples from the Direct Sampling Spatial Prior (DSSP) model
 #'
 #' This function samples from the log-posterior of all parameters in the model and returns a list
@@ -10,11 +8,10 @@
 #' @param formula a two sided linear formula with the response on left and the covariates on the right.
 #' @param data a \code{data.frame} or \code{sp::SpatialPointsDataFrame} containing the response variable, covariates and coordinates.
 #' @param N is the number of random samples to be drawn from the joint posterior for eta, delta, and nu.
-#' @param pars a vector of the prior shape and rate parameters for the inverse-gamma 
+#' @param pars a vector of the prior shape and rate parameters for the inverse-gamma
 #' prior distribution of delta, the variance parameter for the Gaussian likelihood.
 #' @param log_prior a function evaluating the log of the prior density of eta. Default to be \code{function(x) -x}.
 #' @param coords spatial coordinates passed as the \code{value} argument to \code{sp::coordinates()}.
-#' @keywords spatial prior, thin-plate splines
 #' @return A list containing N samples of nu, eta, delta, and the original data X and Y.
 #' @details
 #'  The direct sampling spatial prior model assumes that the spatial model can be written
@@ -42,9 +39,9 @@
 #'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
 #'   pars = c(0.001, 0.001), log_prior = f
 #' )
-DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL) {
+DSSP <- function(formula, data, N, pars, log_prior = function(x) -x, coords = NULL) {
   stopifnot(is.function(log_prior))
-  
+
   if (all(class(data) != "SpatialPointsDataFrame")) {
     sp::coordinates(data) <- coords
     coords <- sp::coordinates(data)
@@ -67,6 +64,7 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
   mt <- stats::terms(formula, data = data)
   mf <- stats::lm(formula, data = data, method = "model.frame")
   nobs <- nrow(stats::na.omit(mf))
+  dep_var <- names(mf)[[1]]
   y <- stats::model.extract(mf, "response")
   y <- scale(y)
   y_scaling <- list(
@@ -101,26 +99,27 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
 
   ##  sample delta
   delta <- sample.delta(eta, ND, EV, Q, pars)
-  
+
   ## sample nu
   nu <- sample.nu(Y, eta, delta, EV, V)
   y_fitted <- nu * y_scaling$scale + y_scaling$center
-  
+
   dssp.out <- list(
     eta = eta,
     delta = delta,
-    nu = nu, 
+    nu = nu,
     y_fitted = y_fitted,
-    covariates_posterior = M.list$G.inv[1:ncol(x), ] %*% y_fitted,
+    covariates_posterior = M.list$G.inv[1:ncol(x), , drop = FALSE] %*% y_fitted,
     N = N,
     X = X,
     Y = Y,
     y_scaling = y_scaling,
     coord_scaling = coord_scaling,
-    coords = coords, 
-    formula = formula, 
+    coords = coords,
+    formula = formula,
     covariates = x,
-    nobs = nobs
+    nobs = nobs,
+    dep_var = dep_var
   )
 
   class(dssp.out) <- "dsspMod"
@@ -128,21 +127,46 @@ DSSP <- function(formula, data, N, pars, log_prior=function(x) -x, coords = NULL
 }
 
 print.dsspMod <- function(x, ...) {
-  # temporary print method for model object
+  # print model summary
   print(summary(x, ...))
 }
 
-residuals.dsspMod <- function(object, newdata, robust, ...) {
+#' Get residuals from \code{dsspMod} model
+#'
+#' @param object an object of class \code{dsspMod}
+#' @param newdata a data frame for which to estimate residuals.
+#' @param robust whether or not to use median (rather than mean) of posterior
+#'   density to as estimate calculate residuals.
+#' @param ... additional arguments which are ignored.
+#'
+#' @return vector containing residuals with same length as rows in data used.
+#' @export
+#'
+#' @examples
+#' library(sp)
+#' library(gstat)
+#' data(meuse.all)
+#' coordinates(meuse.all) <- ~ x + y
+#'
+#' f <- function(x) -x ## log-prior for exponential distribution for the smoothing parameter
+#'
+#' ## Draw 100 samples from the posterior of eta given the data y.
+#' OUTPUT <- DSSP(
+#'   formula = log(zinc) ~ 1, data = meuse.all, N = 100,
+#'   pars = c(0.001, 0.001), log_prior = f
+#' )
+#' residuals(OUTPUT)
+residuals.dsspMod <- function(object, newdata, robust = TRUE, ...) {
   if (missing(newdata)) {
     y_fitted <- object$y_fitted
     y <- object$Y * object$y_scaling$scale + object$y_scaling$center
   } else {
-    y_fitted <- predict.dsspMod(object, newdata=newdata)
+    y_fitted <- predict.dsspMod(object, newdata = newdata)
     mf <- stats::lm(object$formula, data = newdata, method = "model.frame")
     y <- stats::model.extract(mf, "response")
   }
-  
+
   metric <- ifelse(robust, stats::median, mean)
-  
+
   y - apply(y_fitted, 1, metric)
 }

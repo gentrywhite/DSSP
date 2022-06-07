@@ -15,7 +15,7 @@ sample.eta(N, ND, EV, Q, UL = 1000, log_prior)
 
 \item{Q}{the data vector from the cross-product of observed data, Y, and eigenvalues from the M matrix, V.}
 
-\item{UL}{the upper limit for the smoothing parameter value; used for the 
+\item{UL}{the upper limit for the smoothing parameter value; used for the
 ratio-of-uniform sampler, default is 1000.}
 
 \item{log_prior}{a function of x evaluating the log of the prior density for eta}
@@ -51,7 +51,3 @@ f <- function(x) -x ## log-prior for exponential distribution for the smoothing 
 ## Draw 100 samples from the posterior of eta given the data y.
 sample.eta(100, ND, EV, Q, UL = 1000, f)
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}

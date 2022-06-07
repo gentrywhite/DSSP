@@ -1,19 +1,8 @@
 #include <RcppArmadillo.h>
 using namespace Rcpp;
-//[[Rcpp::depends(RcppArmadillo)]]
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
+// [[Rcpp::depends(RcppArmadillo)]]
 // [[Rcpp::export(.sample_y_pred_cpp)]]
-arma::mat sample_y_pred_cpp(const Rcpp::List& pars)
-{
+arma::mat sample_y_pred_cpp(const Rcpp::List& pars) {
   int n = as<int>(pars["n"]);
   int N = as<int>(pars["N"]);
   int m = as<int>(pars["m"]);
@@ -40,12 +29,11 @@ arma::mat sample_y_pred_cpp(const Rcpp::List& pars)
   arma::mat MU_pred = arma::mat(m, 1, arma::fill::ones);
   arma::mat S_pred = arma::mat(m, m, arma::fill::ones);
 
-  for(int i=0; i<N; ++i)
-  {
+  for(int i=0; i<N; ++i) {
+    Rcpp::checkUserInterrupt();
     // declare all matrices outside the loop at the right dimensions (try one by one)
     // and then update - same as LAMBDA in sample_delta.cpp
     // Compute S
-    // arma::mat S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
     S = v*arma::diagmat(1/(1+eta[i]*ev))*VT;
     S_inv = v*arma::diagmat(1+eta[i]*ev)*VT;
     

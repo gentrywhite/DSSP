@@ -18,7 +18,7 @@ sample.nu(Y, eta, delta, EV, V)
 \item{V}{eigenvectors of the precision matrix spatial prior from the function \code{make.M()}.}
 }
 \value{
-A matrix of samples with each column a random draw from the posterior 
+A matrix of samples with each column a random draw from the posterior
 of the spatial effects from the DSSP model \eqn{\pi(nu | eta, delta, y)}.
 }
 \description{
@@ -49,7 +49,3 @@ ETA <- sample.eta(100, ND, EV, Q, f, UL = 1000)
 DELTA <- sample.delta(ETA, ND, EV, Q, pars = c(0.001, 0.001))
 NU <- sample.nu(Y, ETA, DELTA, EV, V)
 }
-\keyword{prior,}
-\keyword{spatial}
-\keyword{splines}
-\keyword{thin-plate}
