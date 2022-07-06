@@ -32,7 +32,7 @@ yielding the solution
 \hat{\mathbf{\nu}}=
 \left(\mathbf{W}+\eta\mathbf{M}\right)^{-1}\mathbf{y}.
 \]
-Note that the matrix $\mathbf{M}$ is based on thin-plate spline basis functions subject to boundary conditions. The details are ommitted here for clarity and to focus on the results and implementation in package. 
+Note that the matrix $\mathbf{M}$ is based on thin-plate spline basis functions subject to boundary conditions. The details are omitted here for clarity and to focus on the results and implementation in package. 
 
 If we assume that the observed data are from a Gaussian distribution
 \[
