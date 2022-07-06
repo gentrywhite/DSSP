@@ -25,36 +25,52 @@ S_{\eta}(f) = \frac{1}{n}\sum^{n}_{i}W_i(y_i - f(\mathbf{x}_i))^2
 which can be written as 
 \[
 \min_{\mathbf{\nu}}\:(\mathbf{y}-\mathbf{\nu})'\mathbf{W}(\mathbf{y}-\mathbf{\nu})+
-\eta\mathbf{\nu}'\mathbf{M}\mathbf{\nu}.
+\eta\mathbf{\nu}'\mathbf{M}\mathbf{\nu}
 \]
-The solution for this problem is 
+yielding the solution
 \[
 \hat{\mathbf{\nu}}=
-(\mathbf{W}+\eta\mathbf{M})^{-1}\mathbf{y}.
+\left(\mathbf{W}+\eta\mathbf{M}\right)^{-1}\mathbf{y}.
 \]
+Note that the matrix $\mathbf{M}$ is based on thin-plate spline basis functions subject to boundary conditions. The details are ommitted here for clarity and to focus on the results and implementation in package. 
+
 If we assume that the observed data are from a Gaussian distribution
 \[
-\mathbf{y}\sim N(\mathbf{\nu},\delta\mathbf{W}^{-1})
+\mathbf{y}\sim N\left(\mathbf{\nu},\delta\mathbf{W}^{-1}\right)
 \]
-the if we specify the prior for $\mathbf{\nu}$ 
+and specify the prior for $\mathbf{\nu}$ 
 \[
 \left[\mathbf{\nu}\mid\eta,\delta\right]\propto\ \frac{\eta}{\delta}^{-{r}/2}
 \exp\left(-\frac{\eta}{2\delta}\mathbf{\nu}'\mathbf{M}\mathbf{\nu}\right),
 \]
-the resulting posterior of $\nu$ is proportional to 
+the resulting conditional posterior of $\nu$ is  
 \[
--\frac{1}{2\delta}\left( (\mathbf{y}-\mathbf{\nu})'\mathbf{W}({\mathbf{y}}-\mathbf{\nu})
--\eta\mathbf{\nu}'\mathbf{M}\mathbf{\nu}\right)
+[\mathbf{\nu}|\eta,\delta,\mathbf{y}]\propto\exp\left\{
+-\frac{1}{2\delta}\left[ (\mathbf{y}-\mathbf{\nu})'\mathbf{W}({\mathbf{y}}-\mathbf{\nu})
+-\eta\mathbf{\nu}'\mathbf{M}\mathbf{\nu}\right]\right\}.
 \]
-which yields the posterior mean with the same solution as the penalised least squares. 
-
-The complete model is specified with a Gaussian likelihood, the improper prior for $\nu$, an inverse gaussian prior for $\delta$, and a prior for $\eta$. With this specification the joint posterior is written
+This can be written as
 \[
-\pi\left(\mathbf{\nu},\delta_0,\eta|\mathbf{y}\right)\propto
+\pi(\mathbf{\nu}|\eta,\delta,\mathbf{y})\sim N(\mathbf{a},\mathbf{B})
+\]
+where
+$$
+\begin{aligned}
+\operatorname{E}(\mathbf{\nu}|\eta,\delta,\mathbf{y})&=\mathbf{a}\\
+&=\left(\mathbf{W}+\eta\mathbf{M}\right)^{-1}\mathbf{y}\\
+\operatorname{Cov}(\mathbf{\nu})&=\mathbf{B}\\
+&=\delta\left(\mathbf{W}+\eta\mathbf{M}\right)^{-1}.
+\end{aligned}
+$$
+Note that the posterior mean with the same solution as the penalised least squares. 
+
+The complete model is specified with a Gaussian likelihood, the improper prior for $\nu$, an inverse gamma prior for $\delta$, and a prior for $\eta$. With this specification the joint posterior is written
+\[
+\pi\left(\mathbf{\nu},\delta,\eta|\mathbf{y}\right)\propto
 f(\mathbf{y}|\mathbf{\nu},\delta)\pi\left(\mathbf{\nu}|\eta,\delta\right)\pi\left(\delta\right)
 \pi\left(\eta\right).
 \]
-Given this it is possible to derive the set of posterior distributions
+It is possible to derive the set of conditional posterior distributions
 \[
 \pi\left(\mathbf{\nu}|\delta,\eta,\mathbf{y}\right)\\
 \pi\left(\delta|\eta,\mathbf{y}\right)\\
@@ -270,3 +286,5 @@ ggplot(
     y = "posterior density"
   )
 ```
+
+Note that in both examples diagnostic plots are not necessary as sample are drawn directly from the posterior. The plots are included here for clarity and illustration, which may be useful in some circumstances. 
