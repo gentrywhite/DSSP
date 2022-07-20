@@ -24,6 +24,7 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/gentrywhite/DSSP/workflows/R-CMD-check/badge.svg)](https://github.com/gentrywhite/DSSP/actions)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/DSSP)](https://www.r-pkg.org/pkg/DSSP)
 [![arXiv](https://img.shields.io/badge/arXiv-1906.05575-00ff00.svg)](https://arxiv.org/abs/1906.05575)
+[![CRAN status](https://www.r-pkg.org/badges/version/DSSP)](https://CRAN.R-project.org/package=DSSP)
 <!-- badges: end -->
 
 The goal of DSSP is to draw samples from the direct sampling spatial

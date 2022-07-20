@@ -9,6 +9,8 @@
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/last-month/DSSP)](https://www.r-pkg.org/pkg/DSSP)
 [![arXiv](https://img.shields.io/badge/arXiv-1906.05575-00ff00.svg)](https://arxiv.org/abs/1906.05575)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/DSSP)](https://CRAN.R-project.org/package=DSSP)
 <!-- badges: end -->
 
 The goal of DSSP is to draw samples from the direct sampling spatial
@@ -53,14 +55,14 @@ summary(meuse.fit)
 #> 
 #> Summary of model:
 #>       Estimate Est.Error l-95% CI u-95% CI      ESS
-#> eta     334.14   1202.47     3.61  1897.49 10000.00
+#> eta     314.13    878.82     3.94  1659.03 10000.00
 #> delta     0.11      0.01     0.09     0.14 10000.00
 #> 
 #> Summary of covariates:
 #>             Estimate Est.Error  min q0.025 q0.25 q0.50 q0.75 q0.975  max
-#> (Intercept)     1.25      0.20 0.48   0.89  1.12  1.25  1.38   1.67 2.30
-#> log(lead)       0.96      0.04 0.84   0.89  0.94  0.96  0.99   1.03 1.10
-#> lime            0.24      0.05 0.03   0.14  0.20  0.24  0.27   0.34 0.43
+#> (Intercept)     1.25      0.20 0.45   0.89  1.12  1.24  1.38   1.66 2.30
+#> log(lead)       0.96      0.04 0.82   0.89  0.94  0.96  0.99   1.03 1.10
+#> lime            0.24      0.05 0.04   0.14  0.21  0.24  0.27   0.34 0.48
 ```
 
 We can inspect several plots for the model using `plot()`.
